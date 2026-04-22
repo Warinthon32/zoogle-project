@@ -179,3 +179,96 @@ BEGIN
        OR c.CName LIKE CONCAT('%', @p_keyword, '%');
 END;
 GO
+
+-- เพิ่มสัตว์
+CREATE PROCEDURE sp_add_animal
+    @name VARCHAR(100),
+    @cid INT,
+    @quantity INT
+AS
+BEGIN
+    INSERT INTO Animal(Name, CID, Quantity)
+    VALUES (@name, @cid, @quantity);
+END;
+GO
+
+-- ลบสัตว์
+CREATE PROCEDURE sp_delete_animal
+    @aid INT
+AS
+BEGIN
+    DELETE FROM Animal WHERE AID = @aid;
+END;
+GO
+
+
+-- ==========================================
+-- Additional Database Features
+-- ==========================================
+
+
+-- ==========================================
+-- VIEW
+-- ==========================================
+-- รวมข้อมูลสัตว์ทำให้เรียกใช้งานง่าย 
+-- ใช้กับหน้า Animal List, Animal Detail, Zoo Map ได้
+-- ลดการเขียน JOIN ซ้ำและทำให้ query สั้นลง
+
+CREATE VIEW vw_animal_full_info AS
+SELECT 
+    a.AID,
+    a.Name,
+    a.SciName,
+    a.Quantity,
+    c.CName AS Category,
+    z.ZName AS Zone,
+    ca.DangerousLevel
+FROM Animal a
+LEFT JOIN Category c ON a.CID = c.CID
+LEFT JOIN Cage ca ON a.CAID = ca.CAID
+LEFT JOIN Zone z ON ca.ZID = z.ZID;
+
+
+
+-- ==========================================
+-- TRIGGER
+-- ==========================================
+-- ป้องกันไม่ให้จำนวนสัตว์เป็นค่าติดลบ
+-- ใช้ในหน้า Admin (Add, Edit Animal)
+
+CREATE TRIGGER trg_check_animal_quantity
+ON Animal
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (SELECT * FROM inserted WHERE Quantity < 0)
+    BEGIN
+        RAISERROR ('Quantity cannot be negative', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+END;
+
+
+
+-- ==========================================
+-- CONSTRAINT
+-- ==========================================
+-- ควบคุมความถูกต้องของข้อมูล
+
+ALTER TABLE Staff
+ADD CONSTRAINT chk_salary_positive
+CHECK (Salary >= 0);
+
+ALTER TABLE Animal
+ADD CONSTRAINT chk_animal_sex
+CHECK (Sex IN ('m','f','o'));
+
+
+
+-- ==========================================
+-- INDEX
+-- ==========================================
+-- ทำให้ค้นหาได้ดีขึ้น (Search, Login)
+
+CREATE INDEX idx_animal_name ON Animal(Name);
+CREATE INDEX idx_staff_username ON Staff(Username);
