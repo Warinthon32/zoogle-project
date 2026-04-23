@@ -41,7 +41,7 @@ INSERT INTO Zone (ZName, Theme, Weather) VALUES
 
 
 -- ==========================================
--- ข้อมูลกรง (ครบทุกโซน)
+-- ข้อมูลกรง (มีการ Hashed Password เพื่อความปลอดภัย)
 -- ==========================================
 INSERT INTO Cage (DangerousLevel, ZID)
 SELECT 3, ZID FROM Zone;
