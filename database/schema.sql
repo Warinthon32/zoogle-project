@@ -227,7 +227,7 @@ FROM Animal a
 LEFT JOIN Category c ON a.CID = c.CID
 LEFT JOIN Cage ca ON a.CAID = ca.CAID
 LEFT JOIN Zone z ON ca.ZID = z.ZID;
-
+GO
 
 
 -- ==========================================
@@ -247,7 +247,7 @@ BEGIN
         ROLLBACK TRANSACTION;
     END
 END;
-
+GO
 
 
 -- ==========================================
@@ -258,10 +258,12 @@ END;
 ALTER TABLE Staff
 ADD CONSTRAINT chk_salary_positive
 CHECK (Salary >= 0);
+GO
 
 ALTER TABLE Animal
 ADD CONSTRAINT chk_animal_sex
 CHECK (Sex IN ('m','f','o'));
+GO
 
 
 
@@ -271,4 +273,6 @@ CHECK (Sex IN ('m','f','o'));
 -- ทำให้ค้นหาได้ดีขึ้น (Search, Login)
 
 CREATE INDEX idx_animal_name ON Animal(Name);
+GO
 CREATE INDEX idx_staff_username ON Staff(Username);
+GO
