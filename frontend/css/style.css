@@ -587,3 +587,201 @@ body {
         text-align: left;
     }
 }
+
+/* Animal List Page Styles */
+.page-header {
+    background-color: #2c6640;
+    color: #ffffff;
+    padding: 3rem 7%;
+    margin-bottom: 2rem;
+}
+
+.breadcrumb {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1rem;
+}
+
+.page-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 600px;
+}
+
+.animal-list-container {
+    padding: 0 7% 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Filter Section */
+.filter-section {
+    background-color: #ffffff;
+    border: 1px solid #eaeaea;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.search-bar input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 1rem;
+    color: #333;
+}
+
+.filter-dropdowns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.dropdown-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dropdown-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+}
+
+.dropdown-group select {
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+    color: #333;
+    font-size: 0.95rem;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Quick Filters */
+.quick-filters-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.quick-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.filter-label {
+    font-weight: 700;
+    color: #333;
+    margin-right: 0.5rem;
+}
+
+.pill-btn {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    color: #555;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pill-btn:hover {
+    background-color: #f4f4f4;
+}
+
+.pill-btn.active {
+    background-color: #2c6640;
+    color: #ffffff;
+    border-color: #2c6640;
+}
+
+.results-count {
+    color: #888;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Animals Grid (List Page) */
+.animals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2.5rem;
+}
+
+.list-card .tags {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.list-card .tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    color: #ffffff;
+}
+
+.list-card .tag.green {
+    background-color: #2c6640;
+}
+
+.list-card .tag.brown {
+    background-color: #8D6E63;
+}
+
+.list-card p {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    flex: 1;
+}
+
+.btn-full-width {
+    width: 100%;
+    background-color: #2c6640;
+    color: #ffffff;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.btn-full-width:hover {
+    background-color: #1e4d2f;
+}
