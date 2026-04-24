@@ -55,12 +55,17 @@
         function handleLogin(event) {
             event.preventDefault(); // Prevent actual form submission
             
-            // For demonstration purposes, always show the error state
-            const errorMessage = document.getElementById('errorMessage');
-            errorMessage.classList.remove('hidden');
-            
-            // Highlight the input border as well if needed (optional)
-            document.getElementById('password').style.borderColor = '#d32f2f';
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if (user === 'admin' && pass === 'password') {
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                // Show error state
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.classList.remove('hidden');
+                document.getElementById('password').style.borderColor = '#d32f2f';
+            }
         }
         
         // Reset error when user starts typing again
