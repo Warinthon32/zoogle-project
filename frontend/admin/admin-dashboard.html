@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Zoogle Admin</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-brand">
+            <h2>Zoogle</h2>
+            <p>ZOO MANAGEMENT SYSTEM</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-link active" onclick="switchView('dashboard', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Dashboard
+            </a>
+            <a href="#" class="nav-link" onclick="switchView('animals', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="22"></line>
+                </svg>
+                Animal Management
+            </a>
+            <a href="#" class="nav-link" onclick="switchView('medical', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                    </path>
+                </svg>
+                Medical Records
+            </a>
+            <a href="#" class="nav-link" onclick="switchView('staff', this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                Staff Directory
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="#" class="logout-link" onclick="confirmLogout(event)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-search">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" placeholder="Global Search">
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </button>
+                <div class="user-avatar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-content" id="dashboard-view">
+            <h1 class="admin-title">Dashboard</h1>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <!-- Stat 1 -->
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper green-light">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                        </svg>
+                    </div>
+                    <button class="setting-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg></button>
+                    <p class="stat-label">Total Animals</p>
+                    <div class="stat-value">1,248</div>
+                    <p class="stat-subtext">Residents</p>
+                </div>
+
+                <!-- Stat 2 -->
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper red-light">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                            </path>
+                        </svg>
+                    </div>
+                    <button class="setting-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg></button>
+                    <p class="stat-label">Active Medical Records</p>
+                    <div class="stat-value">12</div>
+                    <p class="stat-subtext">Treatments</p>
+                </div>
+
+                <!-- Stat 3 -->
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper orange-light">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <p class="stat-label">Total Staff</p>
+                    <div class="stat-value">142</div>
+                    <p class="stat-subtext">Persons</p>
+                </div>
+
+                <!-- Stat 4 -->
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper yellow-light">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <p class="stat-label">Upcoming Events</p>
+                    <div class="stat-value">8</div>
+                    <p class="stat-subtext">Events</p>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <!-- Recent Medical Treatments -->
+                <div class="recent-treatments-section">
+                    <div class="section-header-admin">
+                        <h2>Recent Medical Treatments</h2>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+
+                    <div class="treatments-list">
+                        <!-- Item 1 -->
+                        <div class="treatment-item">
+                            <img src="images/red_panda.png" alt="Mei Lin (Panda)">
+                            <div class="treatment-info">
+                                <h4>Mei Lin (Panda)</h4>
+                                <p>Vitamin Supplementation</p>
+                            </div>
+                            <div class="treatment-meta">
+                                <span class="date">Oct 24, 09:30 AM</span>
+                                <span class="status completed">COMPLETED</span>
+                            </div>
+                        </div>
+
+                        <!-- Item 2 -->
+                        <div class="treatment-item">
+                            <img src="images/lion.png" alt="Koda (African Lion)">
+                            <div class="treatment-info">
+                                <h4>Koda (African Lion)</h4>
+                                <p>Annual Vaccination</p>
+                            </div>
+                            <div class="treatment-meta">
+                                <span class="date">Oct 24, 11:15 AM</span>
+                                <span class="status in-progress">IN PROGRESS</span>
+                            </div>
+                        </div>
+
+                        <!-- Item 3 -->
+                        <div class="treatment-item">
+                            <img src="images/snow_leopard.png" alt="Arya (Snow Leopard)">
+                            <div class="treatment-info">
+                                <h4>Arya (Snow Leopard)</h4>
+                                <p>Minor Wound Care</p>
+                            </div>
+                            <div class="treatment-meta">
+                                <span class="date">Oct 23, 04:45 AM</span>
+                                <span class="status completed">COMPLETED</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories Diversity -->
+                <div class="categories-diversity">
+                    <h3>CATEGORIES DIVERSITY</h3>
+
+                    <div class="diversity-bars">
+                        <div class="bar-group">
+                            <div class="bar-label">
+                                <span>Mammals</span>
+                                <span>40%</span>
+                            </div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="width: 40%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="bar-group">
+                            <div class="bar-label">
+                                <span>Birds</span>
+                                <span>30%</span>
+                            </div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="width: 30%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="bar-group">
+                            <div class="bar-label">
+                                <span>Reptiles</span>
+                                <span>20%</span>
+                            </div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="width: 20%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="bar-group">
+                            <div class="bar-label">
+                                <span>Others</span>
+                                <span>10%</span>
+                            </div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="width: 10%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="upcoming-events-section">
+                <h2>Upcoming Events</h2>
+
+                <div class="admin-events-grid">
+                    <!-- Event 1 -->
+                    <div class="admin-event-card">
+                        <img src="images/macaw.png" alt="Bird of Paradise Feed">
+                        <div class="admin-event-info">
+                            <span class="event-zone">ZONE 7: RAINFOREST</span>
+                            <h3>Bird of Paradise Feed</h3>
+                            <div class="event-time">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                13:00 - 13:30
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Event 2 -->
+                    <div class="admin-event-card">
+                        <img src="images/dolphin.png" alt="Seal Presentation">
+                        <div class="admin-event-info">
+                            <span class="event-zone">ZONE 2: MARINE</span>
+                            <h3>Seal Presentation</h3>
+                            <div class="event-time">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                14:30 - 15:00
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Animal Management View -->
+        <div class="admin-content view-hidden" id="animals-view">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-title" style="margin-bottom: 0.5rem;">Animal Management</h1>
+                    <p class="admin-subtitle">Overseeing 1,248 animals in 14 zones</p>
+                </div>
+                <button class="btn-primary" style="gap: 0.5rem;" onclick="openModal()"><svg width="18" height="18"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg> New Animal</button>
+            </div>
+
+            <!-- Filters -->
+            <div class="admin-filters">
+                <div class="filter-group">
+                    <label>CATEGORY</label>
+                    <div class="dropdown-wrapper">
+                        <select>
+                            <option>All Categories</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>ZONE</label>
+                    <div class="dropdown-wrapper">
+                        <select>
+                            <option>All Zones</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>DIET TYPE</label>
+                    <div class="dropdown-wrapper">
+                        <select>
+                            <option>All Diets</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-reset">Reset Filters</button>
+            </div>
+
+            <!-- Data Table -->
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ANIMAL NAME</th>
+                            <th>SCINAME</th>
+                            <th>ZONE</th>
+                            <th>DIET TYPE</th>
+                            <th>DANGEROUS LEVEL</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="table-animal-info">
+                                    <img src="images/turtle.png" alt="Moodeng">
+                                    <div>
+                                        <strong>Moodeng</strong>
+                                        <span>ID : 1</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Choeropsis liberiensis</td>
+                            <td>Zone Rainforest</td>
+                            <td>Herbivore</td>
+                            <td>
+                                <div class="danger-level"><span class="dot green"></span> Low</div>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg></button>
+                                    <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path
+                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                            </path>
+                                        </svg></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="table-animal-info">
+                                    <img src="images/red_panda.png" alt="Koko">
+                                    <div>
+                                        <strong>Koko</strong>
+                                        <span>ID : 2</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Pan troglodytes</td>
+                            <td>Zone Tropical Forest</td>
+                            <td>Omnivore</td>
+                            <td>
+                                <div class="danger-level"><span class="dot yellow"></span> Moderate</div>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg></button>
+                                    <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path
+                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                            </path>
+                                        </svg></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="table-animal-info">
+                                    <img src="images/griffin.png" alt="Apollo">
+                                    <div>
+                                        <strong>Apollo</strong>
+                                        <span>ID : 3</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Gryps aurum</td>
+                            <td>Zone Savanna</td>
+                            <td>Carnivore</td>
+                            <td>
+                                <div class="danger-level"><span class="dot red"></span> High</div>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg></button>
+                                    <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path
+                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                            </path>
+                                        </svg></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="table-animal-info">
+                                    <img src="images/phoenix.png" alt="Ignis">
+                                    <div>
+                                        <strong>Ignis</strong>
+                                        <span>ID : 4</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Draco ignis</td>
+                            <td>Zone Tropical Forest</td>
+                            <td>Carnivore</td>
+                            <td>
+                                <div class="danger-level"><span class="dot black"></span> Extreme</div>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg></button>
+                                    <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path
+                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                            </path>
+                                        </svg></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="table-animal-info">
+                                    <img src="images/unicorn.png" alt="Luna">
+                                    <div>
+                                        <strong>Luna</strong>
+                                        <span>ID : 5</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Equus monoceros</td>
+                            <td>Zone Bamboo Forest</td>
+                            <td>Herbivore</td>
+                            <td>
+                                <div class="danger-level"><span class="dot green"></span> Low</div>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg></button>
+                                    <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path
+                                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                            </path>
+                                        </svg></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="table-pagination">
+                    <span>SHOWING 5 OF 1,248 ANIMALS</span>
+                    <div class="pagination-controls">
+                        <button class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M15 18l-6-6 6-6" />
+                            </svg></button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <span>...</span>
+                        <button class="page-btn">32</button>
+                        <button class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6 6-6" />
+                            </svg></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Medical Records View -->
+        <div class="admin-content view-hidden" id="medical-view">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-title" style="margin-bottom: 0.5rem;">Medical Records</h1>
+                </div>
+                <button class="btn-primary" style="gap: 0.5rem;" onclick="openMedicalModal()"><svg width="18"
+                        height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg> New Medical Entry</button>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="medical-profile-card">
+                <img src="images/lion.png" alt="Leo the Lion" class="medical-profile-img">
+                <div class="medical-profile-details">
+                    <div class="medical-profile-header">
+                        <h2>Leo</h2>
+                        <div class="tags">
+                            <span class="tag-healthy">HEALTHY</span>
+                            <span class="tag-male">MALE</span>
+                        </div>
+                    </div>
+                    <p class="medical-profile-sub">Panthera leo - African Lion - ID : 6</p>
+
+                    <div class="medical-info-boxes">
+                        <div class="info-box">
+                            <span class="info-box-label">AGE</span>
+                            <span class="info-box-value">8 Years</span>
+                        </div>
+                        <div class="info-box">
+                            <span class="info-box-label">LAST CHECKUP</span>
+                            <span class="info-box-value">12 Mar 2026</span>
+                        </div>
+                        <div class="info-box">
+                            <span class="info-box-label">ASSIGNED VET</span>
+                            <span class="info-box-value">Dr. Sarah K.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>DATE</th>
+                            <th>NOTE</th>
+                            <th>VETERINARIAN</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 600; color: #222;">2026-04-03</td>
+                            <td>Dental sensitivity noted during training</td>
+                            <td>Dr. Sarah Kendrick</td>
+                            <td>MONITORING</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: #222;">2026-03-28</td>
+                            <td>Annual physical examination and rabies booster administered. Body condition normal.</td>
+                            <td>Dr. Marcus Webb</td>
+                            <td>HEALTHY</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: #222;">2026-02-16</td>
+                            <td>Mild lameness in right front paw. X-ray showed no fracture. Prescribed anti-inflammatory
+                                for 5 days.</td>
+                            <td>Dr. James Lee</td>
+                            <td>INJURED</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; color: #222;">2026-01-09</td>
+                            <td>Routine fecal test for parasites. Results negative. Preventative dewormer applied.</td>
+                            <td>Dr. Alan Grant</td>
+                            <td>HEALTHY</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="table-pagination">
+                    <span>SHOWING 4 OF 20 MEDICAL ENTRIES</span>
+                    <div class="pagination-controls">
+                        <button class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M15 18l-6-6 6-6" />
+                            </svg></button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <span>...</span>
+                        <button class="page-btn">5</button>
+                        <button class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6 6-6" />
+                            </svg></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Directory View -->
+        <div class="admin-content view-hidden" id="staff-view">
+            <div class="admin-page-header">
+                <div>
+                    <h1 class="admin-title" style="margin-bottom: 0.5rem;">Staff Directory</h1>
+                    <p class="admin-subtitle">Managing 142 Active conservation and administrative professionals.</p>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="staff-stats-grid">
+                <div class="staff-stat-card">
+                    <span class="staff-stat-label">ACTIVE ZOOKEEPERS</span>
+                    <span class="staff-stat-value">84</span>
+                </div>
+                <div class="staff-stat-card">
+                    <span class="staff-stat-label">VETERINARY STAFF</span>
+                    <span class="staff-stat-value">28</span>
+                </div>
+                <div class="staff-stat-card">
+                    <span class="staff-stat-label">ADMINISTRATORS</span>
+                    <span class="staff-stat-value">30</span>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="staff-filters">
+                <div class="dropdown-wrapper" style="width: 220px;">
+                    <select class="form-control"
+                        style="background-color: #ffffff; border: none; font-weight: 600; font-size: 0.9rem; padding: 0.75rem 1rem; border-radius: 20px;">
+                        <option>All Departments</option>
+                    </select>
+                </div>
+                <div class="dropdown-wrapper" style="width: 180px;">
+                    <select class="form-control"
+                        style="background-color: #ffffff; border: none; font-weight: 600; font-size: 0.9rem; padding: 0.75rem 1rem; border-radius: 20px;">
+                        <option>Sort by Name</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>STAFF MEMBER</th>
+                            <th>ROLE</th>
+                            <th>CONTACT INFORMATION</th>
+                            <th>SALARY</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="table-animal-info">
+                                    <div class="staff-avatar mt">MT</div>
+                                    <div>
+                                        <strong style="color: #222; font-size: 0.95rem;">Marcus Thorne</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>ADMIN</td>
+                            <td>0889886666</td>
+                            <td>89,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="table-animal-info">
+                                    <div class="staff-avatar dc">DC</div>
+                                    <div>
+                                        <strong style="color: #222; font-size: 0.95rem;">David Chen</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>ZOOKEEPER</td>
+                            <td>0889884444</td>
+                            <td>59,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="table-animal-info">
+                                    <div class="staff-avatar er">ER</div>
+                                    <div>
+                                        <strong style="color: #222; font-size: 0.95rem;">Elena Rodriguez</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>VETERINARY STAFF</td>
+                            <td>0889881111</td>
+                            <td>109,000.00</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="table-animal-info">
+                                    <div class="staff-avatar rk">RK</div>
+                                    <div>
+                                        <strong style="color: #222; font-size: 0.95rem;">Robert King</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>ZOOKEEPER</td>
+                            <td>0889889999</td>
+                            <td>69,000.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="table-pagination">
+                    <span>SHOWING 4 OF 142 STAFF MEMBERS</span>
+                    <div class="pagination-controls">
+                        <button class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M15 18l-6-6 6-6" />
+                            </svg></button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <span>...</span>
+                        <button class="page-btn">15</button>
+                        <button class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6 6-6" />
+                            </svg></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function switchView(viewId, element) {
+            // Update active state in sidebar
+            const links = document.querySelectorAll('.sidebar-nav .nav-link');
+            links.forEach(link => link.classList.remove('active'));
+            element.classList.add('active');
+
+            // Add slight fade effect to the main container
+            const mainContent = document.querySelector('.admin-main');
+            mainContent.style.opacity = '0.7';
+
+            setTimeout(() => {
+                // Hide all views
+                document.querySelectorAll('.admin-content').forEach(view => {
+                    view.classList.add('view-hidden');
+                });
+
+                // Show the targeted view
+                document.getElementById(viewId + '-view').classList.remove('view-hidden');
+
+                // Restore opacity
+                mainContent.style.opacity = '1';
+            }, 150); // small delay to make the transition noticeable and smooth
+        }
+
+        // Modal Functions
+        function openModal() {
+            document.getElementById('new-animal-modal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function confirmCancel() {
+            document.getElementById('cancel-confirm-modal').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('cancel-confirm-modal').classList.remove('active');
+            var logoutModal = document.getElementById('logout-confirm-modal');
+            if (logoutModal) logoutModal.classList.remove('active');
+        }
+
+        function forceCloseModal() {
+            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+            document.body.style.overflow = '';
+        }
+
+        function saveAnimal() {
+            alert("Success: Animal data saved to database!");
+            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+            document.body.style.overflow = '';
+        }
+
+        function openMedicalModal() {
+            document.getElementById('new-medical-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function saveMedical() {
+            alert("Success: Medical record saved to database!");
+            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+            document.body.style.overflow = '';
+        }
+
+        function confirmLogout(event) {
+            event.preventDefault();
+            document.getElementById('logout-confirm-modal').classList.add('active');
+        }
+    </script>
+
+    <!-- New Animal Modal -->
+    <div class="modal-overlay" id="new-animal-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="confirmCancel()"><svg width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg></button>
+
+            <div class="modal-body">
+                <!-- General Information -->
+                <div class="modal-section">
+                    <h3>General Infomation</h3>
+
+                    <div class="form-group-modal">
+                        <label>Animal ID</label>
+                        <input type="text" class="form-control">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Name</label>
+                        <input type="text" class="form-control">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Sex</label>
+                        <div class="select-wrapper">
+                            <select class="form-control">
+                                <option></option>
+                                <option>Male</option>
+                                <option>Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Birth Date</label>
+                        <input type="date" class="form-control">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Quantity</label>
+                        <input type="number" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Categories & Biology -->
+                <div class="modal-section">
+                    <h3>Categories & Biology</h3>
+
+                    <div class="form-group-modal">
+                        <label>Category ID</label>
+                        <div class="select-wrapper">
+                            <select class="form-control">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Class</label>
+                        <div class="select-wrapper">
+                            <select class="form-control">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Science Name</label>
+                        <input type="text" class="form-control">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Biology Character</label>
+                        <input type="text" class="form-control">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Description</label>
+                        <textarea class="form-control" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- Management -->
+                <div class="modal-section">
+                    <h3>Management</h3>
+
+                    <div class="form-group-modal">
+                        <label>Zone Name</label>
+                        <div class="select-wrapper">
+                            <select class="form-control">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Cage ID</label>
+                        <div class="select-wrapper">
+                            <select class="form-control">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Parent ID</label>
+                        <div class="select-wrapper">
+                            <select class="form-control">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Diet</label>
+                        <div class="select-wrapper">
+                            <select class="form-control">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Dangerous Level</label>
+                        <div class="select-wrapper">
+                            <select class="form-control">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="confirmCancel()">CANCEL</button>
+                    <button class="btn-save" onclick="saveAnimal()">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div class="modal-overlay" id="cancel-confirm-modal"
+        style="z-index: 1010; backdrop-filter: none; background-color: rgba(0,0,0,0.5);">
+        <div class="confirm-content">
+            <div class="confirm-icon">
+                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#d32f2f" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <h2>Are you sure to cancel?</h2>
+            <div class="confirm-actions">
+                <button class="btn-confirm-no" onclick="closeConfirmModal()">No</button>
+                <button class="btn-confirm-yes" onclick="forceCloseModal()">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Medical Modal -->
+    <div class="modal-overlay" id="new-medical-modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <button class="modal-close" onclick="confirmCancel()"><svg width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg></button>
+
+            <div class="modal-body">
+                <!-- Visit Details -->
+                <div class="modal-section">
+                    <h3>Visit Details</h3>
+
+                    <div class="form-group-modal">
+                        <label>Animal ID</label>
+                        <input type="text" class="form-control">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Staff ID</label>
+                        <input type="text" class="form-control">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>CheckUpDate</label>
+                        <input type="date" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Diagnosis & Treatment -->
+                <div class="modal-section">
+                    <h3>Diagnosis & Treatment</h3>
+
+                    <div class="form-group-modal">
+                        <label>Status</label>
+                        <div class="select-wrapper">
+                            <select class="form-control">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Notes</label>
+                        <textarea class="form-control" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="confirmCancel()">CANCEL</button>
+                    <button class="btn-save" onclick="saveMedical()">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal-overlay" id="logout-confirm-modal"
+        style="z-index: 1010; backdrop-filter: none; background-color: rgba(0,0,0,0.5);">
+        <div class="confirm-content">
+            <div class="confirm-icon">
+                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#d32f2f" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </div>
+            <h2>Are you sure to logout?</h2>
+            <div class="confirm-actions">
+                <button class="btn-confirm-no" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn-confirm-yes" onclick="window.location.href='admin-login.html'">Yes</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
