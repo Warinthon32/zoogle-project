@@ -87,9 +87,14 @@
                 <button class="pill-btn">General Animals</button>
                 <button class="pill-btn">Fantasy Animals</button>
             </div>
-            <div class="results-count">11 animals found</div>
+            <div class="results-count" id="results-count">Loading...</div>
         </section>
 
+        <!-- Dynamic grid — populated by user.js -->
+        <section class="animals-grid" id="animals-grid"></section>
+
+        <!-- Static cards (original) — preserved inside <template> so it won't render -->
+        <template id="static-cards-backup">
         <section class="animals-grid">
             <!-- Card 1 -->
             <div class="animal-card list-card">
@@ -309,6 +314,8 @@
                 </div>
             </div>
         </section>
+        </template>
+
     </main>
 
     <!-- Footer -->
@@ -368,6 +375,8 @@
             </div>
         </div>
     </footer>
+    <script src="../js/api-config.js"></script>
+    <script src="../js/user.js"></script>
 </body>
 
 </html>
