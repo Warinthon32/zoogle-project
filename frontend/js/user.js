@@ -1,12 +1,9 @@
-// ─────────────────────────────────────────────
 //  user.js  —  Public pages (animals list, animal detail, events)
-//
-//  เพื่อน backend: ดู comment "API Endpoint:" ในแต่ละ function
-//  เพื่อรู้ว่าต้องทำ endpoint อะไรใน Spring Boot
+//  backend: ดู comment "API Endpoint:" ในแต่ละ function
+//  เพื่อรู้ว่าต้องทำ endpoint อะไรใน back
 //  เมื่อพร้อมแล้วเปลี่ยน USE_MOCK = false ใน api-config.js
-// ─────────────────────────────────────────────
 
-// ── Mock Data ──────────────────────────────────────────────────────────────
+// Mock Data 
 
 const MOCK_ANIMALS = [
     {
