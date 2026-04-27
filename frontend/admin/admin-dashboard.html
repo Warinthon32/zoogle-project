@@ -117,7 +117,7 @@
                             </path>
                         </svg></button>
                     <p class="stat-label">Total Animals</p>
-                    <div class="stat-value">1,248</div>
+                    <div class="stat-value" id="stat-total-animals">1,248</div>
                     <p class="stat-subtext">Residents</p>
                 </div>
 
@@ -139,7 +139,7 @@
                             </path>
                         </svg></button>
                     <p class="stat-label">Active Medical Records</p>
-                    <div class="stat-value">12</div>
+                    <div class="stat-value" id="stat-medical">12</div>
                     <p class="stat-subtext">Treatments</p>
                 </div>
 
@@ -155,7 +155,7 @@
                         </svg>
                     </div>
                     <p class="stat-label">Total Staff</p>
-                    <div class="stat-value">142</div>
+                    <div class="stat-value" id="stat-staff">142</div>
                     <p class="stat-subtext">Persons</p>
                 </div>
 
@@ -169,7 +169,7 @@
                         </svg>
                     </div>
                     <p class="stat-label">Upcoming Events</p>
-                    <div class="stat-value">8</div>
+                    <div class="stat-value" id="stat-events">8</div>
                     <p class="stat-subtext">Events</p>
                 </div>
             </div>
@@ -371,7 +371,7 @@
                             <th>ACTIONS</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="admin-animals-tbody">
                         <tr>
                             <td>
                                 <div class="table-animal-info">
@@ -613,7 +613,7 @@
                             <th>STATUS</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="admin-medical-tbody">
                         <tr>
                             <td style="font-weight: 600; color: #222;">2026-04-03</td>
                             <td>Dental sensitivity noted during training</td>
@@ -714,7 +714,7 @@
                             <th>SALARY</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="admin-staff-tbody">
                         <tr>
                             <td>
                                 <div class="table-animal-info">
@@ -791,29 +791,29 @@
         </div>
     </main>
 
+    <script src="../js/api-config.js"></script>
+    <script src="../js/admin.js"></script>
     <script>
         function switchView(viewId, element) {
-            // Update active state in sidebar
             const links = document.querySelectorAll('.sidebar-nav .nav-link');
             links.forEach(link => link.classList.remove('active'));
             element.classList.add('active');
 
-            // Add slight fade effect to the main container
             const mainContent = document.querySelector('.admin-main');
             mainContent.style.opacity = '0.7';
 
             setTimeout(() => {
-                // Hide all views
                 document.querySelectorAll('.admin-content').forEach(view => {
                     view.classList.add('view-hidden');
                 });
-
-                // Show the targeted view
                 document.getElementById(viewId + '-view').classList.remove('view-hidden');
-
-                // Restore opacity
                 mainContent.style.opacity = '1';
-            }, 150); // small delay to make the transition noticeable and smooth
+
+                // Load data for each view from admin.js
+                if (viewId === 'animals') initAdminAnimalsTable();
+                else if (viewId === 'medical') initMedicalTable();
+                else if (viewId === 'staff') initStaffTable();
+            }, 150);
         }
 
         // Modal Functions

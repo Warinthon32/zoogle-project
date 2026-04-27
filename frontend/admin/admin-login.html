@@ -66,29 +66,8 @@
         </div>
     </div>
 
-    <script>
-        function handleLogin(event) {
-            event.preventDefault(); // Prevent actual form submission
-
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-
-            if (user === 'admin' && pass === 'password') {
-                window.location.href = 'admin-dashboard.html';
-            } else {
-                // Show error state
-                const errorMessage = document.getElementById('errorMessage');
-                errorMessage.classList.remove('hidden');
-                document.getElementById('password').style.borderColor = '#d32f2f';
-            }
-        }
-
-        // Reset error when user starts typing again
-        document.getElementById('password').addEventListener('input', function () {
-            document.getElementById('errorMessage').classList.add('hidden');
-            this.style.borderColor = ''; // reset border
-        });
-    </script>
+    <script src="../js/api-config.js"></script>
+    <script src="../js/admin.js"></script>
 </body>
 
 </html>
