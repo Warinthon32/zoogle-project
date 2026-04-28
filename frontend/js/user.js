@@ -148,7 +148,7 @@ function renderAnimalCard(animal) {
     return `
         <div class="animal-card list-card">
             <div class="card-image-wrapper">
-                <img src="../images/${animal.image}" alt="${animal.name}"
+                <img src="../images/${(animal.image || '').split('/').pop()}" alt="${animal.name}"
                      onerror="this.src='../images/unicorn.png'">
             </div>
             <div class="card-content">
@@ -234,7 +234,7 @@ async function initAnimalDetailPage() {
     set('#detail-breadcrumb', animal.name);
 
     // Hero
-    set('#detail-hero-img', `../images/${animal.image}`, 'src');
+    set('#detail-hero-img', `../images/${(animal.image || '').split('/').pop()}`, 'src');
     set('#detail-hero-img', animal.name, 'alt');
     set('#detail-name', animal.name);
     set('#detail-sci-name', animal.sciName);
@@ -249,7 +249,7 @@ async function initAnimalDetailPage() {
 
     // Gallery (set all gallery images to this animal)
     document.querySelectorAll('.gallery-img').forEach(img => {
-        img.src = `../images/${animal.image}`;
+        img.src = `../images/${(animal.image || '').split('/').pop()}`;
         img.alt = animal.name;
     });
 }

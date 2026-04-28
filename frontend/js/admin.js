@@ -205,7 +205,7 @@ async function initAdminAnimalsTable() {
         <tr id="animal-row-${a.id}">
             <td>
                 <div class="table-animal-info">
-                    <img src="../images/${a.image}" alt="${a.name}"
+                    <img src="../images/${(a.image || '').split('/').pop()}" alt="${a.name}"
                          onerror="this.src='../images/unicorn.png'">
                     <div>
                         <strong>${a.name}</strong>
