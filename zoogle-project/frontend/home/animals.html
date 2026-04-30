@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal List - Zoogle</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="16" fill="#3a8052" />
+                <path d="M16 6 C12.134 6 9 9.134 9 13 C9 15.6 10.4 17.9 12.5 19 L10 26 L22 26 L19.5 19 C21.6 17.9 23 15.6 23 13 C23 9.134 19.866 6 16 6 Z" fill="#ffffff"/>
+                <circle cx="12.5" cy="12.5" r="2" fill="#3a8052"/>
+                <circle cx="19.5" cy="12.5" r="2" fill="#3a8052"/>
+            </svg>
+            <span>Zoogle</span>
+        </div>
+        <nav class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="#" class="active">Animals</a>
+            <a href="map.html">Zoo Map</a>
+            <a href="events.html">Events</a>
+            <a href="#footer">About</a>
+        </nav>
+        <button class="btn-primary">Get Tickets</button>
+    </header>
+
+    <div class="page-header">
+        <div class="breadcrumb">Zoogle / Animals</div>
+        <h1>Animal List</h1>
+        <p>Explore our diverse collection of amazing animals from around the world</p>
+    </div>
+
+    <main class="animal-list-container">
+        <section class="filter-section">
+            <div class="search-bar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" placeholder="Search animals by name, category, or description...">
+            </div>
+            <div class="filter-dropdowns">
+                <div class="dropdown-group">
+                    <label>Category</label>
+                    <select>
+                        <option>All Categories</option>
+                    </select>
+                </div>
+                <div class="dropdown-group">
+                    <label>Zone</label>
+                    <select>
+                        <option>All Zones</option>
+                    </select>
+                </div>
+                <div class="dropdown-group">
+                    <label>Type</label>
+                    <select>
+                        <option>All Types</option>
+                    </select>
+                </div>
+                <div class="dropdown-group">
+                    <label>Sort By</label>
+                    <select>
+                        <option>Name (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-filters-row">
+            <div class="quick-filters">
+                <span class="filter-label">Quick Filters:</span>
+                <button class="pill-btn active">All</button>
+                <button class="pill-btn">Mammals</button>
+                <button class="pill-btn">Birds</button>
+                <button class="pill-btn">Reptiles</button>
+                <button class="pill-btn">Aquatic</button>
+                <button class="pill-btn">General Animals</button>
+                <button class="pill-btn">Fantasy Animals</button>
+            </div>
+            <div class="results-count" id="results-count">Loading...</div>
+        </section>
+
+        <!-- Dynamic grid — populated by user.js -->
+        <section class="animals-grid" id="animals-grid"></section>
+
+        <!-- Static cards (original) — preserved inside <template> so it won't render -->
+        <template id="static-cards-backup">
+        <section class="animals-grid">
+            <!-- Card 1 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/lion.png" alt="African Lion">
+                </div>
+                <div class="card-content">
+                    <h4>African Lion</h4>
+                    <div class="tags">
+                        <span class="tag green">Mammals</span>
+                        <span class="tag brown">Savanna</span>
+                    </div>
+                    <p>Majestic predator known as the king of the jungle with powerful roars and social pride behavior.
+                    </p>
+                    <button class="btn-full-width" onclick="window.location.href='animal-detail.html'">View Details <svg
+                            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/penguin.png" alt="Emperor Penguin">
+                </div>
+                <div class="card-content">
+                    <h4>Emperor Penguin</h4>
+                    <div class="tags">
+                        <span class="tag green">Birds</span>
+                        <span class="tag brown">Polar</span>
+                    </div>
+                    <p>A flightless bird adapted to icy climates, admired for its elegant posture and strong survival
+                        instincts.</p>
+                    <button class="btn-full-width" onclick="window.location.href='animal-detail.html'">View Details <svg
+                            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/red_panda.png" alt="Red Panda">
+                </div>
+                <div class="card-content">
+                    <h4>Red Panda</h4>
+                    <div class="tags">
+                        <span class="tag green">Mammals</span>
+                        <span class="tag brown">Forest</span>
+                    </div>
+                    <p>A shy tree-dwelling animal with reddish fur, a striped tail, and a playful yet gentle nature.</p>
+                    <button class="btn-full-width" onclick="window.location.href='animal-detail.html'">View Details <svg
+                            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+            <!-- Card 4 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/macaw.png" alt="Scarlet Macaw">
+                </div>
+                <div class="card-content">
+                    <h4>Scarlet Macaw</h4>
+                    <div class="tags">
+                        <span class="tag green">Birds</span>
+                        <span class="tag brown">Rainforest</span>
+                    </div>
+                    <p>A colorful tropical parrot known for its intelligence, vibrant feathers, and loud distinctive
+                        calls.</p>
+                    <button class="btn-full-width" onclick="window.location.href='animal-detail.html'">View Details <svg
+                            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+            <!-- Card 5 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/turtle.png" alt="Green Sea Turtle">
+                </div>
+                <div class="card-content">
+                    <h4>Green Sea Turtle</h4>
+                    <div class="tags">
+                        <span class="tag green">Aquatic</span>
+                        <span class="tag brown">Ocean</span>
+                    </div>
+                    <p>A graceful marine reptile that spends most of its life in the sea and helps maintain ocean
+                        ecosystems.</p>
+                    <button class="btn-full-width" onclick="window.location.href='animal-detail.html'">View Details <svg
+                            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+            <!-- Card 6 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/komodo.png" alt="Komodo Dragon">
+                </div>
+                <div class="card-content">
+                    <h4>Komodo Dragon</h4>
+                    <div class="tags">
+                        <span class="tag green">Reptiles</span>
+                        <span class="tag brown">Island</span>
+                    </div>
+                    <p>A giant lizard with powerful claws and a strong hunting instinct, native to dry tropical islands.
+                    </p>
+                    <button class="btn-full-width" onclick="window.location.href='animal-detail.html'">View Details <svg
+                            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+            <!-- Card 7 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/snow_leopard.png" alt="Snow Leopard">
+                </div>
+                <div class="card-content">
+                    <h4>Snow Leopard</h4>
+                    <div class="tags">
+                        <span class="tag green">Mammals</span>
+                        <span class="tag brown">Mountain</span>
+                    </div>
+                    <p>A rare and elusive big cat with thick fur, powerful limbs, and excellent climbing ability.</p>
+                    <button class="btn-full-width" onclick="window.location.href='animal-detail.html'">View Details <svg
+                            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+            <!-- Card 8 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/flamingo.png" alt="Flamingo">
+                </div>
+                <div class="card-content">
+                    <h4>Flamingo</h4>
+                    <div class="tags">
+                        <span class="tag green">Birds</span>
+                        <span class="tag brown">Wetland</span>
+                    </div>
+                    <p>A striking bird recognized for its pink feathers, long legs, and elegant standing posture.</p>
+                    <button class="btn-full-width">View Details <svg width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+            <!-- Card 9 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/crocodile.png" alt="Crocodile">
+                </div>
+                <div class="card-content">
+                    <h4>Crocodile</h4>
+                    <div class="tags">
+                        <span class="tag green">Reptiles</span>
+                        <span class="tag brown">River</span>
+                    </div>
+                    <p>An ancient reptile with strong jaws and excellent camouflage, often found in rivers and swamps.
+                    </p>
+                    <button class="btn-full-width">View Details <svg width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+            <!-- Card 10 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/dolphin.png" alt="Dolphin">
+                </div>
+                <div class="card-content">
+                    <h4>Dolphin</h4>
+                    <div class="tags">
+                        <span class="tag green">Aquatic</span>
+                        <span class="tag brown">Marine</span>
+                    </div>
+                    <p>An intelligent and social sea animal known for its agility, playful behavior, and communication
+                        skills.</p>
+                    <button class="btn-full-width">View Details <svg width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+            <!-- Card 11 -->
+            <div class="animal-card list-card">
+                <div class="card-image-wrapper">
+                    <img src="images/unicorn.png" alt="Unicorn">
+                </div>
+                <div class="card-content">
+                    <h4>Unicorn</h4>
+                    <div class="tags">
+                        <span class="tag green">Mammals</span>
+                        <span class="tag brown">Mythical</span>
+                    </div>
+                    <p>A legendary horned creature symbolizing purity, grace, and magical beauty within enchanted lands.
+                    </p>
+                    <button class="btn-full-width">View Details <svg width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg></button>
+                </div>
+            </div>
+        </section>
+        </template>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <div class="footer-container">
+            <div class="footer-col brand-col">
+                <div class="logo logo-light">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="16" cy="16" r="16" fill="#3a8052" />
+                        <path d="M16 6 C12.134 6 9 9.134 9 13 C9 15.6 10.4 17.9 12.5 19 L10 26 L22 26 L19.5 19 C21.6 17.9 23 15.6 23 13 C23 9.134 19.866 6 16 6 Z" fill="#ffffff"/>
+                        <circle cx="12.5" cy="12.5" r="2" fill="#3a8052"/>
+                        <circle cx="19.5" cy="12.5" r="2" fill="#3a8052"/>
+                    </svg>
+                    <span>Zoogle</span>
+                </div>
+                <p>Discover fascinating creatures from both the natural world and mythical legends.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Animals</a></li>
+                    <li><a href="events.html">Events</a></li>
+                    <li><a href="#">Education</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Visit</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Plan Your Visit</a></li>
+                    <li><a href="#">Tickets & Pricing</a></li>
+                    <li><a href="map.html">Zoo Map</a></li>
+                    <li><a href="#">FAQs</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <ul class="footer-contact">
+                    <li>123 Zoo Avenue</li>
+                    <li>Bangkok, Thailand 10100</li>
+                    <li>Phone: +66 2 123 4567</li>
+                    <li>Email: info@zoogle.com</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="copyright">
+                &copy; 2024 Zoogle Zoo. All rights reserved.
+            </div>
+            <div class="legal-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+    <script src="../js/api-config.js"></script>
+    <script src="../js/user.js"></script>
+</body>
+
+</html>

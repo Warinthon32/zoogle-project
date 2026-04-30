@@ -1,0 +1,98 @@
+{
+  "Category": {
+    "CategoryId": "int",
+    "CategoryName": "string",
+    "CategoryClass": "string",
+    "CategoryDescription": "string"
+  },
+  "Diet": {
+    "DietId": "int",
+    "DietType": "string",
+    "DietDescription": "string"
+  },
+  "Animal": {
+    "AnimalId": "int",
+    "AnimalName": "string",
+    "ScienceName": "string",
+    "BiologyCharacter": "string",
+    "AnimalSex": "string",
+    "BirthDate": "date",
+    "Quantity": "int",
+    "AnimalClass": "string",
+    "AnimalDescription": "string",
+    "CategoryId": "int",
+    "ParentId": "int",
+    "CageId": "int"
+  },
+  "Zone": {
+    "ZoneId": "int",
+    "ZoneName": "string",
+    "ThemeName": "string",
+    "WeatherStatus": "string"
+  },
+  "Cage": {
+    "CageId": "int",
+    "DangerousLevel": "string",
+    "ZoneId": "int"
+  },
+  "Staff": {
+    "StaffId": "int",
+    "FirstName": "string",
+    "LastName": "string",
+    "NickName": "string",
+    "StaffRole": "string",
+    "UserName": "string",
+    "PassWord": "string",
+    "PhoneNumber": "string",
+    "StaffSex": "string",
+    "SalaryAmount": "decimal",
+    "BirthDate": "date",
+    "CageId": "int"
+  },
+  "ContactPerson": {
+    "ContactFirstName": "string",
+    "ContactLastName": "string",
+    "StaffId": "int",
+    "ContactPhone": "string",
+    "Relationship": "string"
+  },
+  "HealthRecord": {
+    "RecordId": "int",
+    "CheckupDate": "date",
+    "HealthStatus": "string",
+    "HealthNotes": "string",
+    "StaffId": "int"
+  },
+  "Gallery": {
+    "MediaId": "int",
+    "MediaType": "string"
+  },
+  "MediaUrl": {
+    "MediaId": "int",
+    "FullUrl": "string"
+  },
+  "Event": {
+    "EventId": "int",
+    "ShowName": "string",
+    "ShowTime": "time",
+    "ShowDate": "date",
+    "ZoneId": "int"
+  },
+  "Consumes": {
+    "DietId": "int",
+    "AnimalId": "int"
+  },
+  "Participates": {
+    "EventId": "int",
+    "AnimalId": "int"
+  },
+  "HasRecord": {
+    "RecordId": "int",
+    "AnimalId": "int"
+  },
+  "HasMedia": {
+    "MediaId": "int",
+    "AnimalId": "int",
+    "UploadDate": "date"
+  }
+}
