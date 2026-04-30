@@ -791,74 +791,7 @@
         </div>
     </main>
 
-    <script src="../js/api-config.js"></script>
-    <script src="../js/admin.js"></script>
-    <script>
-        function switchView(viewId, element) {
-            const links = document.querySelectorAll('.sidebar-nav .nav-link');
-            links.forEach(link => link.classList.remove('active'));
-            element.classList.add('active');
-
-            const mainContent = document.querySelector('.admin-main');
-            mainContent.style.opacity = '0.7';
-
-            setTimeout(() => {
-                document.querySelectorAll('.admin-content').forEach(view => {
-                    view.classList.add('view-hidden');
-                });
-                document.getElementById(viewId + '-view').classList.remove('view-hidden');
-                mainContent.style.opacity = '1';
-
-                // Load data for each view from admin.js
-                if (viewId === 'animals') initAdminAnimalsTable();
-                else if (viewId === 'medical') initMedicalTable();
-                else if (viewId === 'staff') initStaffTable();
-            }, 150);
-        }
-
-        // Modal Functions
-        function openModal() {
-            document.getElementById('new-animal-modal').classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
-        }
-
-        function confirmCancel() {
-            document.getElementById('cancel-confirm-modal').classList.add('active');
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('cancel-confirm-modal').classList.remove('active');
-            var logoutModal = document.getElementById('logout-confirm-modal');
-            if (logoutModal) logoutModal.classList.remove('active');
-        }
-
-        function forceCloseModal() {
-            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
-            document.body.style.overflow = '';
-        }
-
-        function saveAnimal() {
-            alert("Success: Animal data saved to database!");
-            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
-            document.body.style.overflow = '';
-        }
-
-        function openMedicalModal() {
-            document.getElementById('new-medical-modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function saveMedical() {
-            alert("Success: Medical record saved to database!");
-            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
-            document.body.style.overflow = '';
-        }
-
-        function confirmLogout(event) {
-            event.preventDefault();
-            document.getElementById('logout-confirm-modal').classList.add('active');
-        }
-    </script>
+ 
 
     <!-- New Animal Modal -->
     <div class="modal-overlay" id="new-animal-modal">
@@ -874,21 +807,21 @@
                 <div class="modal-section">
                     <h3>General Infomation</h3>
 
-                    <div class="form-group-modal">
+                    <!-- <div class="form-group-modal">
                         <label>Animal ID</label>
                         <input type="text" class="form-control">
-                    </div>
+                    </div> -->
 
                     <div class="form-group-modal">
                         <label>Name</label>
-                        <input type="text" class="form-control">
+                        <input type="text" class="form-control" id="animal-name">
                     </div>
 
                     <div class="form-group-modal">
                         <label>Sex</label>
                         <div class="select-wrapper">
-                            <select class="form-control">
-                                <option></option>
+                            <select class="form-control" id="animal-sex">
+                                <option>Select Sex</option>
                                 <option>Male</option>
                                 <option>Female</option>
                             </select>
@@ -897,12 +830,12 @@
 
                     <div class="form-group-modal">
                         <label>Birth Date</label>
-                        <input type="date" class="form-control">
+                        <input type="date" class="form-control" id="animal-birth-date">
                     </div>
 
                     <div class="form-group-modal">
                         <label>Quantity</label>
-                        <input type="number" class="form-control">
+                        <input type="number" class="form-control" id="animal-quantity">
                     </div>
                 </div>
 
@@ -913,7 +846,7 @@
                     <div class="form-group-modal">
                         <label>Category ID</label>
                         <div class="select-wrapper">
-                            <select class="form-control">
+                            <select class="form-control" id="animal-category">
                                 <option></option>
                             </select>
                         </div>
@@ -922,7 +855,7 @@
                     <div class="form-group-modal">
                         <label>Class</label>
                         <div class="select-wrapper">
-                            <select class="form-control">
+                            <select class="form-control" id="animal-class">
                                 <option></option>
                             </select>
                         </div>
@@ -930,17 +863,17 @@
 
                     <div class="form-group-modal">
                         <label>Science Name</label>
-                        <input type="text" class="form-control">
+                        <input type="text" class="form-control" id="animal-sci-name">
                     </div>
 
                     <div class="form-group-modal">
                         <label>Biology Character</label>
-                        <input type="text" class="form-control">
+                        <input type="text" class="form-control" id="animal-bio">
                     </div>
 
                     <div class="form-group-modal">
                         <label>Description</label>
-                        <textarea class="form-control" rows="4"></textarea>
+                        <textarea class="form-control" rows="4" id="animal-description"></textarea>
                     </div>
                 </div>
 
@@ -951,7 +884,7 @@
                     <div class="form-group-modal">
                         <label>Zone Name</label>
                         <div class="select-wrapper">
-                            <select class="form-control">
+                            <select class="form-control" id="animal-zone">
                                 <option></option>
                             </select>
                         </div>
@@ -960,7 +893,7 @@
                     <div class="form-group-modal">
                         <label>Cage ID</label>
                         <div class="select-wrapper">
-                            <select class="form-control">
+                            <select class="form-control" id="animal-cage">
                                 <option></option>
                             </select>
                         </div>
@@ -969,7 +902,7 @@
                     <div class="form-group-modal">
                         <label>Parent ID</label>
                         <div class="select-wrapper">
-                            <select class="form-control">
+                            <select class="form-control" id="animal-parent">
                                 <option></option>
                             </select>
                         </div>
@@ -978,7 +911,7 @@
                     <div class="form-group-modal">
                         <label>Diet</label>
                         <div class="select-wrapper">
-                            <select class="form-control">
+                            <select class="form-control" id="animal-diet">
                                 <option></option>
                             </select>
                         </div>
@@ -987,7 +920,7 @@
                     <div class="form-group-modal">
                         <label>Dangerous Level</label>
                         <div class="select-wrapper">
-                            <select class="form-control">
+                            <select class="form-control" id="animal-danger">
                                 <option></option>
                             </select>
                         </div>
@@ -1039,17 +972,25 @@
 
                     <div class="form-group-modal">
                         <label>Animal ID</label>
-                        <input type="text" class="form-control">
+                            <div class="select-wrapper">
+                                <select class="form-control" id="medical-animal-id">
+                                <option></option>
+                            </select>
+                            </div>
                     </div>
 
                     <div class="form-group-modal">
                         <label>Staff ID</label>
-                        <input type="text" class="form-control">
+                            <div class="select-wrapper">
+                                <select class="form-control" id="medical-staff-id">
+                                <option></option>
+                            </select>
+                            </div>
                     </div>
 
                     <div class="form-group-modal">
                         <label>CheckUpDate</label>
-                        <input type="date" class="form-control">
+                        <input type="date" class="form-control" id="medical-checkup-date">
                     </div>
                 </div>
 
@@ -1060,7 +1001,7 @@
                     <div class="form-group-modal">
                         <label>Status</label>
                         <div class="select-wrapper">
-                            <select class="form-control">
+                            <select class="form-control" id="medical-status">
                                 <option></option>
                             </select>
                         </div>
@@ -1068,7 +1009,7 @@
 
                     <div class="form-group-modal">
                         <label>Notes</label>
-                        <textarea class="form-control" rows="4"></textarea>
+                        <textarea class="form-control" rows="4" id="medical-notes"></textarea>
                     </div>
                 </div>
 
@@ -1101,5 +1042,77 @@
         </div>
     </div>
 </body>
+
+   <script src="../js/api-config.js"></script>
+    <script src="../js/admin.js"></script>
+    <script>
+        function switchView(viewId, element) {
+            const links = document.querySelectorAll('.sidebar-nav .nav-link');
+            links.forEach(link => link.classList.remove('active'));
+            element.classList.add('active');
+
+            const mainContent = document.querySelector('.admin-main');
+            mainContent.style.opacity = '0.7';
+
+            setTimeout(() => {
+                document.querySelectorAll('.admin-content').forEach(view => {
+                    view.classList.add('view-hidden');
+                });
+                document.getElementById(viewId + '-view').classList.remove('view-hidden');
+                mainContent.style.opacity = '1';
+
+                // Load data for each view from admin.js
+                if (viewId === 'animals') initAdminAnimalsTable();
+                else if (viewId === 'medical') initMedicalTable();
+                else if (viewId === 'staff') initStaffTable();
+            }, 150);
+        }
+
+        // Modal Functions
+        function openModal() {
+            document.getElementById('new-animal-modal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function confirmCancel() {
+            document.getElementById('cancel-confirm-modal').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('cancel-confirm-modal').classList.remove('active');
+            var logoutModal = document.getElementById('logout-confirm-modal');
+            if (logoutModal) logoutModal.classList.remove('active');
+        }
+
+        function forceCloseModal() {
+            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+            document.body.style.overflow = '';
+        }
+
+        function saveAnimal() {
+            if (saveAnimalToDB() !== True) return
+            alert("Success: Animal data saved to database!");
+            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+            document.body.style.overflow = '';
+            
+        }
+
+        function openMedicalModal() {
+            document.getElementById('new-medical-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function saveMedical() {
+            if (saveMedicalToDB() !== True) return
+            alert("Success: Medical record saved to database!");
+            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+            document.body.style.overflow = '';
+        }
+
+        function confirmLogout(event) {
+            event.preventDefault();
+            document.getElementById('logout-confirm-modal').classList.add('active');
+        }
+    </script>
 
 </html>

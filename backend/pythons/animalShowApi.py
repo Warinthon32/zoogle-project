@@ -34,7 +34,7 @@ def _format_animal_row(row):
     }
 
 
-@animal_bp.route('/api/animals', methods=['GET'])
+@animal_bp.route('/animals', methods=['GET'])
 def get_all_animals():
     conn = None
     try:
@@ -65,7 +65,7 @@ def get_all_animals():
         return jsonify(animals)
 
     except Exception as e:
-        print("Error /api/animals:", e)
+        print("Error /animals:", e)
         return jsonify({"error": "Internal Server Error"}), 500
 
     finally:
@@ -73,9 +73,9 @@ def get_all_animals():
             conn.close()
 
 
-@animal_bp.route('/api/animals/search', methods=['GET'])
+@animal_bp.route('/animals/search', methods=['GET'])
 def search_animals():
-    """GET /api/animals/search?keyword=X — เรียกจาก user.js searchAnimals()"""
+    """GET /animals/search?keyword=X — เรียกจาก user.js searchAnimals()"""
     keyword = request.args.get('keyword', '').strip()
     if not keyword:
         return jsonify([])
@@ -99,7 +99,7 @@ def search_animals():
         return jsonify(animals)
 
     except Exception as e:
-        print("Error /api/animals/search:", e)
+        print("Error /animals/search:", e)
         return jsonify({"error": "Internal Server Error"}), 500
 
     finally:
@@ -107,9 +107,9 @@ def search_animals():
             conn.close()
 
 
-@animal_bp.route('/api/events', methods=['GET'])
+@animal_bp.route('/events', methods=['GET'])
 def get_events():
-    """GET /api/events — เรียกจาก user.js getEvents()"""
+    """GET /events — เรียกจาก user.js getEvents()"""
     conn = None
     try:
         conn = get_db_connection()
@@ -134,7 +134,7 @@ def get_events():
         return jsonify(events)
 
     except Exception as e:
-        print("Error /api/events:", e)
+        print("Error /events:", e)
         return jsonify({"error": "Internal Server Error"}), 500
 
     finally:
@@ -142,7 +142,7 @@ def get_events():
             conn.close()
 
 
-@animal_bp.route('/api/animals/<int:id>', methods=['GET'])
+@animal_bp.route('/animals/<int:id>', methods=['GET'])
 def get_animal_detail(id):
     conn = None
     try:
@@ -187,7 +187,7 @@ def get_animal_detail(id):
         return jsonify({"error": "Database error"}), 500
 
     except Exception as e:
-        print("Error /api/animals/<id>:", e)
+        print("Error /animals/<id>:", e)
         return jsonify({"error": "Internal Server Error"}), 500
 
     finally:

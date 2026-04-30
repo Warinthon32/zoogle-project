@@ -210,6 +210,8 @@ async function initAnimalsPage() {
             renderList(result);
         });
     }
+
+    initDropdownFilters(allAnimals)
 }
 
 // เรียกใน animal-detail.html
@@ -255,6 +257,133 @@ async function initAnimalDetailPage() {
     });
 }
 
+
+
+
+
+function populateDropdowns(animals) {
+    const categorySelect = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(1) select');
+    const zoneSelect     = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(2) select');
+    const sortSelect     = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(4) select');
+
+    if (!categorySelect || !zoneSelect || !sortSelect) return;
+
+    const categories = ['All', ...new Set(animals.map(a => a.category).filter(Boolean))].sort();
+    const zones      = ['All', ...new Set(animals.map(a => a.zone).filter(Boolean))].sort();
+
+    categorySelect.innerHTML = categories.map(c =>
+        `<option value="${c}">${c === 'All' ? 'All Categories' : c}</option>`
+    ).join('');
+
+    zoneSelect.innerHTML = zones.map(z =>
+        `<option value="${z}">${z === 'All' ? 'All Zones' : z}</option>`
+    ).join('');
+
+    sortSelect.innerHTML = `
+        <option value="name-az">Name (A–Z)</option>
+        <option value="name-za">Name (Z–A)</option>
+        <option value="danger-high">Danger (High–Low)</option>
+        <option value="danger-low">Danger (Low–High)</option>
+    `;
+}
+
+function applyFilters(animals, { category = 'All', zone = 'All', keyword = '', sort = 'name-az' } = {}) {
+    let result = [...animals];
+
+    if (category !== 'All') result = result.filter(a => a.category === category);
+    if (zone !== 'All')     result = result.filter(a => a.zone === zone);
+
+    if (keyword) {
+        const kw = keyword.toLowerCase();
+        result = result.filter(a =>
+            a.name.toLowerCase().includes(kw)           ||
+            (a.sciName  || '').toLowerCase().includes(kw) ||
+            (a.category || '').toLowerCase().includes(kw) ||
+            (a.zone     || '').toLowerCase().includes(kw)
+        );
+    }
+
+    result.sort((a, b) => {
+        if (sort === 'name-az')     return a.name.localeCompare(b.name);
+        if (sort === 'name-za')     return b.name.localeCompare(a.name);
+        if (sort === 'danger-high') return b.dangerLevel - a.dangerLevel;
+        if (sort === 'danger-low')  return a.dangerLevel - b.dangerLevel;
+        return 0;
+    });
+
+    return result;
+}
+
+function initDropdownFilters(allAnimals) {
+    const grid           = document.getElementById('animals-grid');
+    const countEl        = document.getElementById('results-count');
+    const searchInput    = document.querySelector('.search-bar input');
+    const categorySelect = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(1) select');
+    const zoneSelect     = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(2) select');
+    const sortSelect     = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(4) select');
+
+
+    const state = { category: 'All', zone: 'All', keyword: '', sort: 'name-az' };
+
+
+    function render() {
+        const result = applyFilters(allAnimals, state);
+        grid.innerHTML = result.length
+            ? result.map(renderAnimalCard).join('')
+            : '<p style="padding:2rem;color:#888;">No animals found.</p>';
+        if (countEl) {
+            countEl.textContent = `${result.length} animal${result.length !== 1 ? 's' : ''} found`;
+        }
+    }
+
+
+    populateDropdowns(allAnimals);
+
+    categorySelect?.addEventListener('change', () => {
+        state.category = categorySelect.value;
+   
+        document.querySelectorAll('.pill-btn').forEach(b => {
+            b.classList.toggle('active', b.textContent.trim() === state.category);
+        });
+        render();
+    });
+
+    zoneSelect?.addEventListener('change', () => {
+        state.zone = zoneSelect.value;
+        render();
+    });
+
+    sortSelect?.addEventListener('change', () => {
+        state.sort = sortSelect.value;
+        render();
+    });
+
+
+    if (searchInput) {
+        const newInput = searchInput.cloneNode(true);
+        searchInput.replaceWith(newInput);
+        newInput.addEventListener('input', () => {
+            state.keyword = newInput.value.trim();
+            render();
+        });
+    }
+
+    document.querySelectorAll('.pill-btn').forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.replaceWith(newBtn);
+        newBtn.addEventListener('click', () => {
+            document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+            newBtn.classList.add('active');
+            state.category = newBtn.textContent.trim();
+            if (categorySelect) categorySelect.value = state.category;
+            render();
+        });
+    });
+
+    render();
+}
+
+
 // Auto-init: detect page and run the right function
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('animals-grid')) {
@@ -262,4 +391,5 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (document.getElementById('detail-name')) {
         initAnimalDetailPage();
     }
+
 });
