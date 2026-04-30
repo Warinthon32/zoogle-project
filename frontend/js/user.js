@@ -188,6 +188,7 @@ async function initAnimalsPage() {
     }
 
     let allAnimals = await getAnimals();
+    console.log("GET all animals: ", allAnimals)
     renderList(allAnimals);
 
     // Quick filter pill buttons

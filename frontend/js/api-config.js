@@ -2,8 +2,8 @@
 //  backend: เปลี่ยน USE_MOCK เป็น false เมื่อหลังบ้านพร้อม
 //  และตั้ง API_BASE_URL ให้ตรงกับ server ของตัวเอง
 
-const API_BASE_URL = 'http://localhost:8080/api';
-const USE_MOCK = true;
+const API_BASE_URL = 'http://localhost:5000/api';
+const USE_MOCK = false;
 
 // GET  →  GET /api/<endpoint>
 async function apiGet(endpoint) {
