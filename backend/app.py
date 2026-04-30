@@ -1,23 +1,39 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
+from datetime import timedelta
+import os
 
-
-# ─── Import Controllers ────────────────────────────────────
 from pythons.adminApi import admin_bp
 from pythons.animalShowApi import animal_bp
-
+from pythons.auth import auth_bp
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["http://127.0.0.1:5500"])
 
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-secret-key-change-in-production-please!")
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-app.register_blueprint(admin_bp)
-app.register_blueprint(animal_bp)
+CORS(app,
+     resources={r"/api/*": {"origins": "http://127.0.0.1:5500"}},
+     supports_credentials=True,
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
-@app.route("/health", methods=["GET"])
-def health():
+app.register_blueprint(admin_bp, url_prefix='/api')
+app.register_blueprint(animal_bp, url_prefix='/api')
+app.register_blueprint(auth_bp, url_prefix='/api')
+
+@app.route("/health")
+def health_check():
     return jsonify({"status": "ok"}), 200
 
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({"error": "Endpoint not found"}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host="127.0.0.1", port=5000)
