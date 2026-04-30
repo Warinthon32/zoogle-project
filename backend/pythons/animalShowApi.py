@@ -1,13 +1,14 @@
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, Blueprint
 import pyodbc
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
 MEDIA_BASE_URL = "http://127.0.0.1:5500/frontend/images/"
+animal_bp = Blueprint('animal', __name__)
 
 def get_db_connection():
     try:
-        server = 'LOCALHOST'
+        server = 'localhost\SQLEXPRESS'
         database = 'ZoogleDB'
         conn_str = (
             f"DRIVER={{SQL Server}};"
@@ -33,7 +34,7 @@ def _format_animal_row(row):
     }
 
 
-@app.route('/api/animals', methods=['GET'])
+@animal_bp.route('/api/animals', methods=['GET'])
 def get_all_animals():
     conn = None
     try:
@@ -72,7 +73,7 @@ def get_all_animals():
             conn.close()
 
 
-@app.route('/api/animals/search', methods=['GET'])
+@animal_bp.route('/api/animals/search', methods=['GET'])
 def search_animals():
     """GET /api/animals/search?keyword=X — เรียกจาก user.js searchAnimals()"""
     keyword = request.args.get('keyword', '').strip()
@@ -106,7 +107,7 @@ def search_animals():
             conn.close()
 
 
-@app.route('/api/events', methods=['GET'])
+@animal_bp.route('/api/events', methods=['GET'])
 def get_events():
     """GET /api/events — เรียกจาก user.js getEvents()"""
     conn = None
@@ -141,7 +142,7 @@ def get_events():
             conn.close()
 
 
-@app.route('/api/animals/<int:id>', methods=['GET'])
+@animal_bp.route('/api/animals/<int:id>', methods=['GET'])
 def get_animal_detail(id):
     conn = None
     try:
@@ -194,5 +195,5 @@ def get_animal_detail(id):
             conn.close()
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
