@@ -108,39 +108,61 @@ const MOCK_EVENTS = [
 // API Endpoint: GET /api/animals?category=X
 async function getAnimals(category = null) {
     if (USE_MOCK) {
-        if (!category || category === 'All') return [...MOCK_ANIMALS];
-        return MOCK_ANIMALS.filter(a => a.category === category);
+        const result = (!category || category === 'All')
+            ? [...MOCK_ANIMALS]
+            : MOCK_ANIMALS.filter(a => a.category === category);
+        console.log(`[MOCK] GET /api/animals${category ? '?category=' + category : ''} →`, result.length, 'animals');
+        return result;
     }
     const query = category && category !== 'All' ? `?category=${encodeURIComponent(category)}` : '';
-    return apiGet('/animals' + query);
+    console.log(`[API] GET /api/animals${query}`);
+    const result = await apiGet('/animals' + query);
+    console.log(`[API] response →`, result);
+    return result;
 }
 
 // API Endpoint: GET /api/animals/{id}
 async function getAnimalById(id) {
     if (USE_MOCK) {
-        return MOCK_ANIMALS.find(a => a.id === parseInt(id)) || null;
+        const result = MOCK_ANIMALS.find(a => a.id === parseInt(id)) || null;
+        console.log(`[MOCK] GET /api/animals/${id} →`, result ? result.name : 'not found');
+        return result;
     }
-    return apiGet(`/animals/${id}`);
+    console.log(`[API] GET /api/animals/${id}`);
+    const result = await apiGet(`/animals/${id}`);
+    console.log(`[API] response →`, result);
+    return result;
 }
 
 // API Endpoint: GET /api/animals/search?keyword=X
 async function searchAnimals(keyword) {
     if (USE_MOCK) {
         const kw = keyword.toLowerCase();
-        return MOCK_ANIMALS.filter(a =>
+        const result = MOCK_ANIMALS.filter(a =>
             a.name.toLowerCase().includes(kw) ||
             a.sciName.toLowerCase().includes(kw) ||
             a.category.toLowerCase().includes(kw) ||
             a.zone.toLowerCase().includes(kw)
         );
+        console.log(`[MOCK] GET /api/animals/search?keyword=${keyword} →`, result.length, 'results');
+        return result;
     }
-    return apiGet(`/animals/search?keyword=${encodeURIComponent(keyword)}`);
+    console.log(`[API] GET /api/animals/search?keyword=${keyword}`);
+    const result = await apiGet(`/animals/search?keyword=${encodeURIComponent(keyword)}`);
+    console.log(`[API] response →`, result);
+    return result;
 }
 
 // API Endpoint: GET /api/events
 async function getEvents() {
-    if (USE_MOCK) return [...MOCK_EVENTS];
-    return apiGet('/events');
+    if (USE_MOCK) {
+        console.log(`[MOCK] GET /api/events →`, MOCK_EVENTS.length, 'events');
+        return [...MOCK_EVENTS];
+    }
+    console.log(`[API] GET /api/events`);
+    const result = await apiGet('/events');
+    console.log(`[API] response →`, result);
+    return result;
 }
 
 // ─── Render Helpers ────────────────────────────────────────────────────────────
@@ -150,7 +172,7 @@ function renderAnimalCard(animal) {
     return `
         <div class="animal-card list-card">
             <div class="card-image-wrapper">
-                <img src="../images/${img}" alt="${animal.name}"
+                <img src="../images/${animal.image}" alt="${animal.name}"
                      onerror="this.src='../images/unicorn.png'">
             </div>
             <div class="card-content">
@@ -269,7 +291,9 @@ async function initAnimalDetailPage() {
     };
 
     set('#detail-breadcrumb', animal.name);
-    set('#detail-hero-img', `../images/${(animal.image || '').split('/').pop()}`, 'src');
+
+    // Hero
+    set('#detail-hero-img', `../images/${animal.image}`, 'src');
     set('#detail-hero-img', animal.name, 'alt');
     set('#detail-name', animal.name);
     set('#detail-sci-name', animal.sciName);
@@ -281,7 +305,7 @@ async function initAnimalDetailPage() {
     set('#detail-zone-info', animal.zone + ' Zone');
 
     document.querySelectorAll('.gallery-img').forEach(img => {
-        img.src = `../images/${(animal.image || '').split('/').pop()}`;
+        img.src = `../images/${animal.image}`;
         img.alt = animal.name;
     });
 
