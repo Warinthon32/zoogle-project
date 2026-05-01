@@ -1,9 +1,8 @@
 //  user.js  —  Public pages (animals list, animal detail, events)
 //  backend: ดู comment "API Endpoint:" ในแต่ละ function
-//  เพื่อรู้ว่าต้องทำ endpoint อะไรใน back
 //  เมื่อพร้อมแล้วเปลี่ยน USE_MOCK = false ใน api-config.js
 
-// Mock Data 
+// ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const MOCK_ANIMALS = [
     {
@@ -104,7 +103,8 @@ const MOCK_EVENTS = [
     }
 ];
 
-// API Functions
+// ─── API Functions ─────────────────────────────────────────────────────────────
+
 // API Endpoint: GET /api/animals?category=X
 async function getAnimals(category = null) {
     if (USE_MOCK) {
@@ -143,12 +143,14 @@ async function getEvents() {
     return apiGet('/events');
 }
 
-// Render Helpers
+// ─── Render Helpers ────────────────────────────────────────────────────────────
+
 function renderAnimalCard(animal) {
+    const img = (animal.image || '').split('/').pop();
     return `
         <div class="animal-card list-card">
             <div class="card-image-wrapper">
-                <img src="../images/${(animal.image || '').split('/').pop()}" alt="${animal.name}"
+                <img src="../images/${img}" alt="${animal.name}"
                      onerror="this.src='../images/unicorn.png'">
             </div>
             <div class="card-content">
@@ -171,7 +173,32 @@ function renderAnimalCard(animal) {
         </div>`;
 }
 
-// Page Initializers 
+function renderRelatedCard(animal) {
+    const img = (animal.image || '').split('/').pop();
+    return `
+        <div class="animal-card list-card">
+            <div class="card-image-wrapper">
+                <img src="../images/${img}" alt="${animal.name}"
+                     onerror="this.src='../images/unicorn.png'">
+            </div>
+            <div class="card-content">
+                <h4>${animal.name}</h4>
+                <span class="category-tag">${animal.category}</span>
+                <button class="btn-full-width"
+                    onclick="window.location.href='animal-detail.html?id=${animal.id}'">
+                    View Details
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>`;
+}
+
+// ─── Page Initializers ─────────────────────────────────────────────────────────
+
 // เรียกใน animals.html
 async function initAnimalsPage() {
     const grid = document.getElementById('animals-grid');
@@ -190,7 +217,6 @@ async function initAnimalsPage() {
     let allAnimals = await getAnimals();
     renderList(allAnimals);
 
-    // Quick filter pill buttons
     document.querySelectorAll('.pill-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
@@ -201,7 +227,6 @@ async function initAnimalsPage() {
         });
     });
 
-    // Search input
     if (searchInput) {
         searchInput.addEventListener('input', async () => {
             const kw = searchInput.value.trim();
@@ -213,13 +238,26 @@ async function initAnimalsPage() {
 
 // เรียกใน animal-detail.html
 async function initAnimalDetailPage() {
-    const id = new URLSearchParams(window.location.search).get('id') || 1;
-    const animal = await getAnimalById(id);
+    const id = parseInt(new URLSearchParams(window.location.search).get('id')) || 1;
+
+    // ดึงข้อมูลสัตว์ปัจจุบัน + สัตว์ในหมวดเดียวกัน พร้อมกันใน Promise.all ครั้งเดียว
+    let animal, sameCategory;
+    try {
+        [animal, sameCategory] = await Promise.all([
+            getAnimalById(id),
+            getAnimals() // ดึงทั้งหมดก่อน แล้ว filter ข้างล่าง (1 call เท่านั้น)
+        ]);
+    } catch (e) {
+        console.error('[detail] โหลดข้อมูลล้มเหลว:', e);
+        return;
+    }
 
     if (!animal) {
         document.body.innerHTML = '<p style="padding:2rem;text-align:center;">Animal not found.</p>';
         return;
     }
+
+    // ── Populate detail fields ──────────────────────────────────────────────
 
     document.title = `${animal.name} - Zoogle`;
 
@@ -230,10 +268,7 @@ async function initAnimalDetailPage() {
         else el.textContent = value;
     };
 
-    // Breadcrumb
     set('#detail-breadcrumb', animal.name);
-
-    // Hero
     set('#detail-hero-img', `../images/${(animal.image || '').split('/').pop()}`, 'src');
     set('#detail-hero-img', animal.name, 'alt');
     set('#detail-name', animal.name);
@@ -241,20 +276,31 @@ async function initAnimalDetailPage() {
     set('#detail-hero-desc', animal.description);
     set('#detail-category-tag', animal.category);
     set('#detail-zone-tag', animal.zone + ' Zone');
-
-    // Info cards
     set('#detail-long-desc', animal.longDescription);
     set('#detail-diet-type', animal.diet);
     set('#detail-zone-info', animal.zone + ' Zone');
 
-    // Gallery (set all gallery images to this animal)
     document.querySelectorAll('.gallery-img').forEach(img => {
         img.src = `../images/${(animal.image || '').split('/').pop()}`;
         img.alt = animal.name;
     });
+
+    // ── Related Animals (same category, exclude self, max 4) ───────────────
+
+    const relatedGrid = document.querySelector('.related-animals .animals-grid');
+    if (relatedGrid) {
+        const related = sameCategory
+            .filter(a => a.category === animal.category && a.id !== id)
+            .slice(0, 4);
+
+        relatedGrid.innerHTML = related.length
+            ? related.map(renderRelatedCard).join('')
+            : '<p style="padding:1rem;color:#888;">No related animals found.</p>';
+    }
 }
 
-// Auto-init: detect page and run the right function
+// ─── Auto-init ─────────────────────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('animals-grid')) {
         initAnimalsPage();
