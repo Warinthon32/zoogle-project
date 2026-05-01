@@ -2846,9 +2846,59 @@ textarea.form-control {
     letter-spacing: 0.5px;
 }
 
+.tag-monitoring {
+    background-color: #fff8e1;
+    color: #f57f17;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.tag-injured {
+    background-color: #fff3e0;
+    color: #e65100;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.tag-critical {
+    background-color: #ffebee;
+    color: #b71c1c;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.tag-recovering {
+    background-color: #e8eaf6;
+    color: #283593;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
 .tag-male {
     background-color: #e3f2fd;
     color: #1976d2;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.tag-female {
+    background-color: #fce4ec;
+    color: #c2185b;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.75rem;

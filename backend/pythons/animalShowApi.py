@@ -30,7 +30,8 @@ def _format_animal_row(row):
         "category": row.Category,
         "zone": row.Zone,
         "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None,
-        "dangerLevel": row.DangerousLevel
+        "dangerLevel": row.DangerousLevel,
+        "birthDate": row.BirthDate
     }
 
 
@@ -45,7 +46,7 @@ def get_all_animals():
 
         query = """
             SELECT
-                v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel,
+                v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel, v.BirthDate,
                 (
                     SELECT TOP 1 m.MediaURL
                     FROM MediaURL m

@@ -67,7 +67,7 @@ const MOCK_DASHBOARD_STATS = {
 // API Endpoint: GET /api/animals  (admin version — returns all fields)
 async function getAdminAnimals() {
     if (USE_MOCK) return [...MOCK_ADMIN_ANIMALS];
-    return apiGet('/animals');
+    return apiGet('/admin_animals');
 }
 
 // API Endpoint: POST /api/animals
@@ -122,11 +122,6 @@ async function getStaff() {
     return apiGet('/staff');
 }
 
-async function getStaff() {
-    if (USE_MOCK) return [...MOCK_STAFF];
-    return apiGet('/staff');
-}
-
 async function getCategories() {
     return apiGet('/categories');
 }
@@ -155,6 +150,13 @@ async function getDashboardStats() {
     if (USE_MOCK) return { ...MOCK_DASHBOARD_STATS };
     return apiGet('/dashboard/stats');
 }
+
+async function getEvents() {
+    return apiGet('/events');
+}
+
+
+
 // Danger Level Helpers 
 
 function getDangerLabel(level) {
@@ -353,12 +355,12 @@ function populateAnimalModalDropdowns(animals, categories, zones, cages, diets) 
             + categories.map(c => `<option value="${c.cid}">${c.name}</option>`).join('');
     }
 
-    const classSel = sections[1]?.querySelectorAll('select')[1];
-    if (classSel) {
-        classSel.innerHTML = `<option value="">Select Class</option>`
-            + ['Mammalia', 'Aves', 'Reptilia', 'Amphibia', 'Actinopterygii', 'Insecta', 'Arachnida', 'Mythical']
-                .map(c => `<option value="${c}">${c}</option>`).join('');
-    }
+    // const classSel = sections[1]?.querySelectorAll('select')[1];
+    // if (classSel) {
+    //     classSel.innerHTML = `<option value="">Select Class</option>`
+    //         + ['Mammalia', 'Aves', 'Reptilia', 'Amphibia', 'Actinopterygii', 'Insecta', 'Arachnida', 'Mythical']
+    //             .map(c => `<option value="${c}">${c}</option>`).join('');
+    // }
 
     // Section 2: Zone, Cage, Parent, Diet, Danger
     const mgmt = sections[2]?.querySelectorAll('select');
@@ -411,10 +413,11 @@ async function populateMedicalModalDropdowns() {
 
     const staffSel = document.getElementById('medical-staff-id');
 
-    if (staffSel) {
-        staffSel.innerHTML = `<option value="">Select Staff</option>`
-            + staff.map(s => `<option value="${s.id}">${s.firstName} ${s.lastName} — ${s.role}</option>`).join('');
-    }
+    staffSel.innerHTML = `<option value="">Select Staff</option>`
+        + staff
+            .filter(s => s.role !== 'Admin')  
+            .map(s => `<option value="${s.id}">${s.firstName} ${s.lastName} — ${s.role}</option>`)
+            .join('');
 }
 
 function populateStaffFilterDropdowns(staff, onChange) {
@@ -547,7 +550,10 @@ async function initAdminAnimalsTable() {
         const filtered = getFiltered();
         _animalPager.load(filtered, renderAnimalRow);
         const subtitle = document.querySelector('#animals-view .admin-subtitle');
-        if (subtitle) subtitle.textContent = `Overseeing ${filtered.length} animals`;
+        if (subtitle) {
+            const zoneCount = new Set(filtered.map(a => a.zone).filter(Boolean)).size;
+            subtitle.textContent = `Overseeing ${filtered.length} animals in ${zoneCount} zones`;
+        }
     }
 
     populateAnimalFilterDropdowns(animals, categories, zones, diets, (f) => {
@@ -660,6 +666,9 @@ function confirmDeleteAnimal(id, name) {
 // Medical Table
 async function initMedicalTable() {
     const records = await getMedicalRecords();
+
+    await initMedicalProfileCard();
+
     const pager = createPagination({
         tbodyId:           'admin-medical-tbody',
         containerSelector: '#medical-view .admin-table-container'
@@ -696,6 +705,12 @@ async function saveMedicalToDB() {
 // Staff Table
 async function initStaffTable() {
     const staff = await getStaff();
+
+    updateStaffStatsGrid(staff);
+
+    const subtitle = document.querySelector('#staff-view .admin-subtitle');
+    if (subtitle) subtitle.textContent = `Managing ${staff.length} Active conservation and administrative professionals.`;
+
     const pager = createPagination({
         tbodyId:           'admin-staff-tbody',
         containerSelector: '#staff-view .admin-table-container'
@@ -728,9 +743,182 @@ async function initStaffTable() {
 }
 
 
+async function initDashboardTreatments() {
+    const [records, animals] = await Promise.all([
+        getMedicalRecords(),
+        getAdminAnimals()
+    ]);
+
+    const list = document.querySelector('.treatments-list');
+    if (!list) return;
+
+    list.innerHTML = records.slice(0, 3).map(r => {
+        const animal = animals.find(a => a.id === r.animalId);
+        const img    = animal?.mainImage || animal?.image || 'unicorn.png';
+        const name   = animal?.name ?? `Animal #${r.animalId}`;
+        // console.log(records)
+        // console.log(animals)
+        // console.log(animal)
+        // console.log(name)
+
+        const statusClass = r.status === 'HEALTHY'    ? 'completed'
+                          : r.status === 'MONITORING' ? 'in-progress'
+                          : r.status === 'INJURED'    ? 'in-progress'
+                          : r.status === 'CRITICAL'   ? 'in-progress'
+                          : 'completed';
+
+        const preview = r.notes?.length > 40
+            ? r.notes.substring(0, 40) + '...'
+            : (r.notes ?? '—');
+
+        return `
+        <div class="treatment-item">
+            <img src="../images/${img.split('/').pop()}" alt="${name}"
+                 onerror="this.src='../images/unicorn.png'">
+            <div class="treatment-info">
+                <h4>${name}</h4>
+                <p>${preview}</p>
+            </div>
+            <div class="treatment-meta">
+                <span class="date">${r.checkupDate ?? ''}</span>
+                <span class="status ${statusClass}">${r.status ?? ''}</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function initCategoriesDiversity() {
+    const animals    = await getAdminAnimals();
+    const categories = await getCategories();
+
+    const total = animals.length || 1;
+
+    const countMap = {};
+    animals.forEach(a => {
+        const key = a.category || 'Others';
+        countMap[key] = (countMap[key] || 0) + 1;
+    });
+
+    const sorted = Object.entries(countMap)
+        .map(([name, count]) => ({ name, pct: Math.round(count / total * 100) }))
+        .sort((a, b) => b.pct - a.pct)
+        .slice(0, 4);
+
+    const barsEl = document.querySelector('.diversity-bars');
+    if (!barsEl) return;
+
+    barsEl.innerHTML = sorted.map(({ name, pct }) => `
+        <div class="bar-group">
+            <div class="bar-label">
+                <span>${name}</span>
+                <span>${pct}%</span>
+            </div>
+            <div class="bar-bg">
+                <div class="bar-fill" style="width: ${pct}%;"></div>
+            </div>
+        </div>`).join('');
+}
 
 
+async function initDashboardEvents() {
+    const events = await getEvents();
+    const grid   = document.querySelector('.admin-events-grid');
+    if (!grid) return;
 
+    grid.innerHTML = events.slice(0, 2).map(e => `
+        <div class="admin-event-card">
+            <img src="../images/macaw.png" alt="${e.showName}"
+                 onerror="this.src='../images/macaw.png'">
+            <div class="admin-event-info">
+                <span class="event-zone">${e.zone ? `ZONE ${e.zone.zid}: ${e.zone.name.toUpperCase()}` : 'UNKNOWN ZONE'}</span>
+                <h3>${e.showName}</h3>
+                <div class="event-time">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    ${e.showTime ?? 'TBD'} · ${e.showDate ?? ''}
+                </div>
+            </div>
+        </div>`).join('');
+}
+
+async function initDashboard() {
+    await Promise.all([
+        initDashboardStats(),
+        initDashboardTreatments(),
+        initCategoriesDiversity(),
+        initDashboardEvents()
+    ]);
+}
+
+async function initMedicalProfileCard() {
+    const records = await getMedicalRecords();
+    if (!records.length) return;
+
+    const firstRecord  = records[0];
+    const animals      = await getAdminAnimals();
+    const animal       = animals.find(a => a.id === firstRecord.animalId);
+    if (!animal) return;
+    
+    const age = animal.birthDate
+        ? Math.floor((new Date() - new Date(animal.birthDate)) / (365.25 * 24 * 60 * 60 * 1000))
+        : null;
+
+    const latestStatus = firstRecord.status ?? 'UNKNOWN';
+    const assignedVet  = firstRecord.staffName || '—';
+    const lastCheckup  = firstRecord.checkupDate ?? '—';
+
+    // status tag class
+    const statusTagClass = latestStatus === 'HEALTHY'    ? 'tag-healthy'
+                         : latestStatus === 'INJURED'    ? 'tag-injured'
+                         : latestStatus === 'CRITICAL'   ? 'tag-critical'
+                         : 'tag-healthy';
+
+    // sex tag
+    const sexLabel    = animal.sex === 'm' ? 'MALE' : animal.sex === 'f' ? 'FEMALE' : '—';
+    const sexTagClass = animal.sex === 'm' ? 'tag-male' : 'tag-female';
+
+    const card = document.querySelector('.medical-profile-card');
+    if (!card) return;
+
+    const img = card.querySelector('.medical-profile-img');
+    if (img) {
+        const imgFile = (animal.image || '').split('/').pop() || 'unicorn.png';
+        img.src = `../images/${imgFile}`;
+        img.alt = animal.name;
+        img.onerror = () => { img.src = '../images/unicorn.png'; };
+    }
+
+    const h2 = card.querySelector('h2');
+    if (h2) h2.textContent = animal.name;
+
+    const tags = card.querySelector('.tags');
+    if (tags) tags.innerHTML = `
+        <span class="${statusTagClass}">${latestStatus}</span>
+        <span class="${sexTagClass}">${sexLabel}</span>`;
+
+    const sub = card.querySelector('.medical-profile-sub');
+    if (sub) sub.textContent = `${animal.sciName} — ID : ${animal.id}`;
+
+    const boxes = card.querySelectorAll('.info-box-value');
+    if (boxes[0]) boxes[0].textContent = age !== null ? `${age} Years` : '—';
+    if (boxes[1]) boxes[1].textContent = lastCheckup;
+    if (boxes[2]) boxes[2].textContent = assignedVet;
+}
+
+function updateStaffStatsGrid(staff) {
+    const count = (role) => staff.filter(s =>
+        s.role?.toLowerCase() === role.toLowerCase()
+    ).length;
+
+    const grid = document.querySelector('.staff-stats-grid');
+    if (!grid) return;
+
+    const cards = grid.querySelectorAll('.staff-stat-value');
+    if (cards[0]) cards[0].textContent = count('Zookeeper');
+    if (cards[1]) cards[1].textContent = count('Veterinary Staff');
+    if (cards[2]) cards[2].textContent = count('Admin');
+}
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
@@ -741,158 +929,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (document.getElementById('dashboard-view')) initDashboardStats();
+    if (document.getElementById('dashboard-view')) initDashboard();
     if (document.getElementById('animals-view'))   initAdminAnimalsTable();
     if (document.getElementById('medical-view'))   initMedicalTable();
     if (document.getElementById('staff-view'))     initStaffTable();
 });
 
-/*
-async function initAdminAnimalsTable() {
-    const tbody = document.getElementById('admin-animals-tbody');
-    if (!tbody) return;
 
-    const animals = await getAdminAnimals();
-    tbody.innerHTML = animals.map(a => `
-        <tr id="animal-row-${a.id}">
-            <td>
-                <div class="table-animal-info">
-                    <img src="../images/${(a.image || '').split('/').pop()}" alt="${a.name}"
-                         onerror="this.src='../images/unicorn.png'">
-                    <div>
-                        <strong>${a.name}</strong>
-                        <span>ID : ${a.id}</span>
-                    </div>
-                </div>
-            </td>
-            <td>${a.sciName}</td>
-            <td>Zone ${a.zone}</td>
-            <td>${a.diet}</td>
-            <td>
-                <div class="danger-level">
-                    <span class="dot ${getDangerDotClass(a.dangerLevel)}"></span>
-                    ${getDangerLabel(a.dangerLevel)}
-                </div>
-            </td>
-            <td>
-                <div class="table-actions">
-                    <button title="Edit"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                    <button title="Delete" onclick="confirmDeleteAnimal(${a.id}, '${a.name}')">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    </button>
-                </div>
-            </td>
-        </tr>`).join('');
 
-    // อัปเดต subtitle count
-    const subtitle = document.querySelector('#animals-view .admin-subtitle');
-    if (subtitle) subtitle.textContent = `Overseeing ${animals.length} animals`;
-}
 
-// Save / Delete Animal 
-// เรียกตอนกด SAVE ใน modal (แทน inline saveAnimal)
-async function saveAnimal() {
-    const formData = {
-        name: document.querySelector('#new-animal-modal input[placeholder=""], #new-animal-modal .form-control:nth-of-type(2)')?.value || '',
-        quantity: parseInt(document.querySelector('#new-animal-modal input[type="number"]')?.value) || 0
-    };
 
-    const result = await addAnimal(formData);
-    if (result.success) {
-        alert('Animal saved successfully!');
-        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-        document.body.style.overflow = '';
-        initAdminAnimalsTable();
-    } else {
-        alert('Failed to save animal.');
-    }
-}
-
-// confirm แล้วค่อยลบ
-function confirmDeleteAnimal(id, name) {
-    if (confirm(`Delete "${name}"?`)) {
-        deleteAnimalById(id).then(() => {
-            document.getElementById(`animal-row-${id}`)?.remove();
-        });
-    }
-}
-
-// Medical Records Table 
-async function initMedicalTable() {
-    const tbody = document.getElementById('admin-medical-tbody');
-    if (!tbody) return;
-
-    const records = await getMedicalRecords();
-    tbody.innerHTML = records.map(r => `
-        <tr>
-            <td style="font-weight:600;color:#222;">${r.checkupDate}</td>
-            <td>${r.notes}</td>
-            <td>${r.staffName}</td>
-            <td>${r.status}</td>
-        </tr>`).join('');
-}
-
-// เรียกตอนกด SAVE ใน medical modal
-async function saveMedical() {
-    const formData = {
-        animalId: document.querySelector('#new-medical-modal input[type="text"]')?.value,
-        staffId: document.querySelectorAll('#new-medical-modal input[type="text"]')[1]?.value,
-        checkupDate: document.querySelector('#new-medical-modal input[type="date"]')?.value,
-        status: document.querySelector('#new-medical-modal select')?.value,
-        notes: document.querySelector('#new-medical-modal textarea')?.value
-    };
-
-    const result = await addMedicalRecord(formData);
-    if (result.success) {
-        alert('Medical record saved successfully!');
-        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-        document.body.style.overflow = '';
-        initMedicalTable();
-    } else {
-        alert('Failed to save medical record.');
-    }
-}
-
-// Staff Table 
-
-async function initStaffTable() {
-    const tbody = document.getElementById('admin-staff-tbody');
-    if (!tbody) return;
-
-    const staff = await getStaff();
-    tbody.innerHTML = staff.map(s => {
-        const initials = (s.firstName[0] + s.lastName[0]).toLowerCase();
-        const fullName = `${s.firstName} ${s.lastName}`;
-        return `
-        <tr>
-            <td>
-                <div class="table-animal-info">
-                    <div class="staff-avatar ${initials}">${initials.toUpperCase()}</div>
-                    <div><strong style="color:#222;font-size:.95rem;">${fullName}</strong></div>
-                </div>
-            </td>
-            <td>${s.role.toUpperCase()}</td>
-            <td>${s.phone}</td>
-            <td>${s.salary.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-        </tr>`;
-    }).join('');
-}
-
-// Auto-init: detect page and run the right functions 
-document.addEventListener('DOMContentLoaded', () => {
-    // admin-login.html
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.onsubmit = handleLogin;
-        document.getElementById('password')?.addEventListener('input', function () {
-            document.getElementById('errorMessage')?.classList.add('hidden');
-            this.style.borderColor = '';
-        });
-    }
-
-    // admin-dashboard.html
-    if (document.getElementById('dashboard-view')) {
-        initDashboardStats();
-    }
-});
-*/

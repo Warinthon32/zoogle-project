@@ -855,9 +855,10 @@
                     <div class="form-group-modal">
                         <label>Class</label>
                         <div class="select-wrapper">
-                            <select class="form-control" id="animal-class">
+                            <!-- <select class="form-control" id="animal-class">
                                 <option></option>
-                            </select>
+                            </select> -->
+                            <input type="text" class="form-control" id="animal-class" placeholder="Enter class">
                         </div>
                     </div>
 
@@ -1090,11 +1091,13 @@
         }
 
         function saveAnimal() {
-            if (saveAnimalToDB() !== True) return
-            alert("Success: Animal data saved to database!");
-            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
-            document.body.style.overflow = '';
-            
+            saveAnimalToDB().then(status => {
+                if (status != true) return
+                
+                alert("Success: Animal data saved to database!");
+                document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+                document.body.style.overflow = '';
+            });
         }
 
         function openMedicalModal() {
@@ -1103,10 +1106,13 @@
         }
 
         function saveMedical() {
-            if (saveMedicalToDB() !== True) return
-            alert("Success: Medical record saved to database!");
-            document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
-            document.body.style.overflow = '';
+            saveMedicalToDB().then(status => {
+                if (status !== true) return
+
+                alert("Success: Medical record saved to database!");
+                document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+                document.body.style.overflow = '';
+            });
         }
 
         function confirmLogout(event) {
