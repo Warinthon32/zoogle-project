@@ -77,6 +77,7 @@ def get_all_admin_animals():
         columns = [col[0] for col in cursor.description]
 
         result = []
+
         for row in rows:
             data = dict(zip(columns, row))
             result.append({
@@ -103,7 +104,7 @@ def get_all_admin_animals():
 
         for item in result:
             print(item["image"])
-
+        print()
         return jsonify(result)
 
     except Exception as e:
@@ -228,6 +229,69 @@ def save_animals():
 
     except Exception as e:
         print("Error /animals:", e)
+        return jsonify({"error": "Internal Server Error"}), 500
+
+    finally:
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/animals/<int:aid>', methods=['PUT'])
+def update_animal(aid):
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        data = request.get_json()
+
+        # UPDATE main table
+        cursor.execute("""
+            UPDATE Animal
+            SET Name = ?,
+                SciName = ?,
+                BioCharacter = ?,
+                Sex = ?,
+                BirthDate = ?,
+                Quantity = ?,
+                Class = ?,
+                Description = ?,
+                CID = ?,
+                ParentID = ?,
+                CAID = ?
+            WHERE AID = ?
+        """, (
+            data.get("name"),
+            data.get("sciName"),
+            data.get("bioCharacter") or None,
+            data.get("sex"),
+            data.get("birthDate") or None,
+            data.get("quantity") or 1,
+            data.get("class"),
+            data.get("description") or None,
+            data.get("categoryId"),
+            data.get("parentId") or None,
+            data.get("cageId"),
+            aid
+        ))
+
+        # update diet 
+        cursor.execute("DELETE FROM Consumes WHERE AID = ?", (aid,))
+
+        if data.get("dietId"):
+            cursor.execute("""
+                INSERT INTO Consumes (DID, AID)
+                VALUES (?, ?)
+            """, (data.get("dietId"), aid))
+
+        conn.commit()
+
+        return jsonify({
+            "success": True,
+            "aid": aid
+        })
+
+    except Exception as e:
+        print("Error /animals PUT:", e)
         return jsonify({"error": "Internal Server Error"}), 500
 
     finally:

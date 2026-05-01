@@ -67,7 +67,8 @@ const MOCK_DASHBOARD_STATS = {
 // API Endpoint: GET /api/animals  (admin version — returns all fields)
 async function getAdminAnimals() {
     if (USE_MOCK) return [...MOCK_ADMIN_ANIMALS];
-    return apiGet('/admin_animals');
+    animals = await apiGet('/admin_animals');
+    return animals
 }
 
 // API Endpoint: POST /api/animals
@@ -164,7 +165,9 @@ async function getEvents() {
     return apiGet('/events');
 }
 
-
+async function updateAnimal(id, formData) {
+    return apiPut(`/animals/${id}`, formData);
+}
 
 // Danger Level Helpers 
 
@@ -221,21 +224,7 @@ async function handleLogin(event) {
     }
 }
 
-// API Endpoint: GET /api/dashboard/stats
-// Response: { totalAnimals, activeMedicalRecords, totalStaff, upcomingEvents }
-async function initDashboardStats() {
-    const stats = await getDashboardStats();
-    const els = {
-        'stat-total-animals': stats.totalAnimals,
-        'stat-medical':       stats.activeMedicalRecords,
-        'stat-staff':         stats.totalStaff,
-        'stat-events':        stats.upcomingEvents
-    };
-    Object.entries(els).forEach(([id, val]) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val.toLocaleString();
-    });
-}
+
 
 
 // Pagination
@@ -400,7 +389,7 @@ function populateAnimalModalDropdowns(animals, categories, zones, cages, diets) 
     }
 }
 
-async function populateMedicalModalDropdowns() {
+async function populateMedicalModalDropdowns(animals, staff) {
     const statusSel = document.getElementById('medical-status');
     if (statusSel) {
         statusSel.innerHTML = `<option value="">Select Status</option>`
@@ -408,11 +397,6 @@ async function populateMedicalModalDropdowns() {
                 .map(s => `<option value="${s}">${s}</option>`).join('');
     }
 
-    // Animal + Staff ดึงจาก API พร้อมกัน
-    const [animals, staff] = await Promise.all([
-        getAdminAnimals(),
-        getStaff()
-    ]);
 
     const animalSel = document.getElementById('medical-animal-id');
     if (animalSel) {
@@ -451,6 +435,127 @@ function populateStaffFilterDropdowns(staff, onChange) {
 }
 
 
+
+
+function populateEditAnimalModalDropdowns(currentAnimalId, animals, categories, zones, cages, diets) {
+    const modal = document.getElementById('edit-animal-modal');
+    if (!modal) return;
+
+    const catSel = modal.querySelector('#edit-animal-category');
+    if (catSel) {
+        catSel.innerHTML = `<option value="">Select Category</option>`
+            + categories.map(c => `<option value="${c.cid}">${c.name}</option>`).join('');
+    }
+
+    const zoneSel = modal.querySelector('#edit-animal-zone');
+    if (zoneSel) {
+        zoneSel.innerHTML = `<option value="">Select Zone</option>`
+            + zones.map(z => `<option value="${z.zid}">${z.name}</option>`).join('');
+    }
+
+    const cageSel = modal.querySelector('#edit-animal-cage');
+    if (cageSel) {
+        cageSel.innerHTML = `<option value="">Select Cage</option>`
+            + cages.map(c => `<option value="${c.caid}">Cage ${c.caid}</option>`).join('');
+    }
+
+    const parentSel = modal.querySelector('#edit-animal-parent');
+    if (parentSel) {
+        parentSel.innerHTML =
+            `<option value="">None</option>` +
+            animals
+                .filter(a => a.id !== currentAnimalId) 
+                .map(a => `<option value="${a.id}">${a.name} (ID: ${a.id})</option>`)
+                .join('');
+    }
+
+    const dietSel = modal.querySelector('#edit-animal-diet');
+    if (dietSel) {
+        dietSel.innerHTML = `<option value="">Select Diet</option>`
+            + diets.map(d => `<option value="${d.did}">${d.dietType}</option>`).join('');
+    }
+
+    const dangerSel = modal.querySelector('#edit-animal-danger');
+    if (dangerSel) {
+        dangerSel.innerHTML = `<option value="">Select Level</option>`
+            + [1, 2, 3, 4, 5].map(l => `<option value="${l}">${getDangerLabel(l)} (${l})</option>`).join('');
+    }
+}
+
+function fillEditAnimalForm(animal) {
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val ?? '';
+    };
+
+    const sexVal = animal.sex === 'm' ? 'Male' : animal.sex === 'f' ? 'Female' : '';
+
+    setVal('edit-animal-name',        animal.name);
+    setVal('edit-animal-sex',         sexVal);
+    setVal('edit-animal-birth-date',  animal.birthDate);
+    setVal('edit-animal-quantity',    animal.quantity);
+    setVal('edit-animal-category',    animal.categoryId);
+    setVal('edit-animal-class',       animal.class);
+    setVal('edit-animal-sci-name',    animal.sciName);
+    setVal('edit-animal-bio',         animal.bioCharacter);
+    setVal('edit-animal-description', animal.description);
+    setVal('edit-animal-zone',        animal.zoneId);
+    setVal('edit-animal-cage',        animal.cageId);
+    setVal('edit-animal-parent',      animal.parentId ?? '');
+    setVal('edit-animal-diet',        animal.dietId);
+    setVal('edit-animal-danger',      animal.dangerLevel);
+}
+
+
+async function openEditAnimalModal(animalId, data) {
+    const modal = document.getElementById('edit-animal-modal');
+    if (!modal) return;
+
+    if (!data) {
+        [animals, categories, zones, cages, diets] = await Promise.all([
+            getAdminAnimals(),
+            getCategories(),
+            getZones(),
+            getCages(),
+            getDiets()
+        ]);
+    } else {
+        animals = data.animals;
+        categories = data.categories;
+        zones = data.zones;
+        cages = data.cages;
+        diets = data.diets;
+    }
+
+
+
+    const idSel = document.getElementById('edit-animal-id');
+    if (idSel) {
+        idSel.innerHTML =
+            `<option value="">Select Animal</option>` +
+            animals.map(a =>
+                `<option value="${a.id}">${a.name} (ID: ${a.id})</option>`
+            ).join('');
+
+        idSel.onchange = function () {
+            const animal = animals.find(a => a.id === parseInt(this.value));
+            if (animal) fillEditAnimalForm(animal);
+        };
+    }
+
+    populateEditAnimalModalDropdowns(animalId, animals, categories, zones, cages, diets);
+
+    const animalFirst = animals.find(a => a.id === parseInt(animalId));
+
+    if (animalFirst) {
+        idSel.value = animalFirst.id;
+        fillEditAnimalForm(animalFirst);
+    }
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
 // Row Renderers
 function renderAnimalRow(a) {
     return `
@@ -476,7 +581,7 @@ function renderAnimalRow(a) {
             </td>
             <td>
                 <div class="table-actions">
-                    <button title="Edit">
+                    <button title="Edit" onclick="openEditAnimalModal(${a.id})">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -523,55 +628,55 @@ function renderStaffRow(s) {
 // Animal Table (fetch + pagination + filter)
 
 let _animalPager = null;
-let _allAnimals  = [];
+let _allDataCache = {
+    animals: [],
+    categories: [],
+    zones: [],
+    cages: [],
+    diets: [],
+    events: [],
+    records: [],
+    stats: {},
+    staff: []
+}
 
-async function initAdminAnimalsTable() {
-    // Fetch animals and all lookup tables in parallel
-    const [animals, categories, zones, cages, diets] = await Promise.all([
+async function fetchAllDataCache() {
+    const [
+        animals,
+        categories,
+        zones,
+        cages,
+        diets,
+        events,
+        records,
+        stats,
+        staff
+    ] = await Promise.all([
         getAdminAnimals(),
         getCategories(),
         getZones(),
         getCages(),
-        getDiets()
+        getDiets(),
+        getEvents(),
+        getMedicalRecords(),
+        getDashboardStats(),
+        getStaff()
     ]);
 
-    _allAnimals  = animals;
-    _animalPager = createPagination({
-        tbodyId:           'admin-animals-tbody',
-        containerSelector: '#animals-view .admin-table-container'
-    });
-
-    populateAnimalModalDropdowns(animals, categories, zones, cages, diets);
-    populateMedicalModalDropdowns();
-
-    // Filter state now tracks IDs (null = "show all")
-    const state = { categoryId: null, zoneId: null, dietId: null };
-
-    function getFiltered() {
-        return _allAnimals.filter(a =>
-            (state.categoryId === null || a.categoryId === state.categoryId) &&
-            (state.zoneId     === null || a.zoneId     === state.zoneId)     &&
-            (state.dietId     === null || a.dietId     === state.dietId)
-        );
-    }
-
-    function refresh() {
-        const filtered = getFiltered();
-        _animalPager.load(filtered, renderAnimalRow);
-        const subtitle = document.querySelector('#animals-view .admin-subtitle');
-        if (subtitle) {
-            const zoneCount = new Set(filtered.map(a => a.zone).filter(Boolean)).size;
-            subtitle.textContent = `Overseeing ${filtered.length} animals in ${zoneCount} zones`;
-        }
-    }
-
-    populateAnimalFilterDropdowns(animals, categories, zones, diets, (f) => {
-        Object.assign(state, f);
-        refresh();
-    });
-
-    refresh();
+    return {
+        animals,
+        categories,
+        zones,
+        cages,
+        diets,
+        events,
+        records,
+        stats,
+        staff
+    };
 }
+
+
 
 // Save / Delete Animal
 
@@ -624,29 +729,22 @@ async function saveAnimalToDB() {
             document.body.style.overflow = '';
 
             // reload ข้อมูลใหม่ทั้งหมด
-            const [animals, categories, zones, cages, diets] = await Promise.all([
-                getAdminAnimals(), getCategories(), getZones(), getCages(), getDiets()
-            ]);
+            // const [animals, categories, zones, cages, diets] = await Promise.all([
+            //     getAdminAnimals(), getCategories(), getZones(), getCages(), getDiets()
+            // ]);
 
-            // โหลด mainImage ให้ทุกตัว
-            const mediaResults = await Promise.allSettled(
-                animals.map(a => getAnimalMainMedia(a.id))
-            );
-            animals.forEach((a, i) => {
-                const res = mediaResults[i];
-                a.mainImage = res.status === 'fulfilled' && res.value?.url
-                    ? res.value.url
-                    : '../images/unicorn.png';
-            });
 
-            _allAnimals = animals;
-            _animalPager?.refresh(_allAnimals);
-            populateAnimalModalDropdowns(_allAnimals, categories, zones, cages, diets);
+            _allDataCache = await fetchAllDataCache();
+
+            _animalPager?.refresh(_allDataCache.animals);
+            populateAnimalModalDropdowns(_allDataCache.animals, _allDataCache.categories, _allDataCache.zones, _allDataCache.cages, _allDataCache.diets);
+            initCategoriesDiversity(_allDataCache)
+            initDashboardStats(_allDataCache)
 
             const subtitle = document.querySelector('#animals-view .admin-subtitle');
             if (subtitle) {
-                const zoneCount = new Set(_allAnimals.map(a => a.zone).filter(Boolean)).size;
-                subtitle.textContent = `Overseeing ${_allAnimals.length} animals in ${zoneCount} zones`;
+                const zoneCount = new Set(_allDataCache.animals.map(a => a.zone).filter(Boolean)).size;
+                subtitle.textContent = `Overseeing ${_allDataCache.animals.length} animals in ${zoneCount} zones`;
             }
 
             return true;
@@ -659,30 +757,101 @@ async function saveAnimalToDB() {
     }
 }
 
-function confirmDeleteAnimal(id, name) {
-    if (confirm(`Delete "${name}"?`)) {
-        deleteAnimalById(id).then(() => {
-            _allAnimals = _allAnimals.filter(a => a.id !== id);
-            _animalPager?.refresh(_allAnimals);
-            const subtitle = document.querySelector('#animals-view .admin-subtitle');
-            if (subtitle) subtitle.textContent = `Overseeing ${_allAnimals.length} animals`;
-            initMedicalTable();
-        });
+
+async function updateAnimalInDB() {
+    const animalId = document.getElementById('edit-animal-id')?.value;
+    if (!animalId) { alert('Please select an animal.'); return; }
+
+    const sexRaw = (document.getElementById('edit-animal-sex')?.value || '').toLowerCase();
+    const sex_map = { male: 'm', female: 'f' };
+
+    const formData = {
+        id:           parseInt(animalId),
+        name:         document.getElementById('edit-animal-name')?.value          || '',
+        sciName:      document.getElementById('edit-animal-sci-name')?.value?.trim() || '',
+        sex:          sex_map[sexRaw] ?? sexRaw,
+        birthDate:    document.getElementById('edit-animal-birth-date')?.value       || '',
+        quantity:     parseInt(document.getElementById('edit-animal-quantity')?.value)    || 1,
+        categoryId:   parseInt(document.getElementById('edit-animal-category')?.value)   || null,
+        class:        document.getElementById('edit-animal-class')?.value                || '',
+        bioCharacter: document.getElementById('edit-animal-bio')?.value                  || '',
+        description:  document.getElementById('edit-animal-description')?.value          || '',
+        zoneId:       parseInt(document.getElementById('edit-animal-zone')?.value)       || null,
+        cageId:       parseInt(document.getElementById('edit-animal-cage')?.value)       || null,
+        parentId:     parseInt(document.getElementById('edit-animal-parent')?.value)     || null,
+        dietId:       parseInt(document.getElementById('edit-animal-diet')?.value)       || null,
+        dangerLevel:  parseInt(document.getElementById('edit-animal-danger')?.value)     || 1
+    };
+
+    const requiredFields = [
+        { key: 'sciName',    label: 'Scientific name' },
+        { key: 'sex',        label: 'Sex' },
+        { key: 'class',      label: 'Class' },
+        { key: 'birthDate',  label: 'Birth date' },
+        { key: 'categoryId', label: 'Category' },
+        { key: 'zoneId',     label: 'Zone' },
+        { key: 'cageId',     label: 'Cage' },
+        { key: 'dietId',     label: 'Diet' },
+    ];
+
+    for (const f of requiredFields) {
+        if (!formData[f.key]) { alert(`Please enter ${f.label}.`); return; }
+    }
+
+    try {
+        const result = await updateAnimal(animalId, formData);
+        if (!result.success) { alert('Failed to update animal.'); return; }
+
+        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+        document.body.style.overflow = '';
+
+        // const [animals, categories, zones, cages, diets] = await Promise.all([
+        //     getAdminAnimals(), getCategories(), getZones(), getCages(), getDiets()
+        // ]);
+
+        // const mediaResults = await Promise.allSettled(
+        //     animals.map(a => getAnimalMainMedia(a.id))
+        // );
+        // animals.forEach((a, i) => {
+        //     const res = mediaResults[i];
+        //     a.mainImage = res.status === 'fulfilled' && res.value?.url
+        //         ? res.value.url : '../images/unicorn.png';
+        // });
+
+        _allDataCache = await fetchAllDataCache();
+
+        // _allDataCache.animals = animals;
+        _animalPager?.refresh(_allDataCache.animals);
+        populateAnimalModalDropdowns(_allDataCache.animals, _allDataCache.categories, _allDataCache.zones, _allDataCache.cages, _allDataCache.diets);
+        initCategoriesDiversity(_allDataCache)
+        initDashboardStats(_allDataCache)
+
+        const subtitle = document.querySelector('#animals-view .admin-subtitle');
+        if (subtitle) {
+            const zoneCount = new Set(_allDataCache.animals.map(a => a.zone).filter(Boolean)).size;
+            subtitle.textContent = `Overseeing ${_allDataCache.animals.length} animals in ${zoneCount} zones`;
+        }
+
+        return true;
+    } catch (err) {
+        console.error('Update animal error:', err);
+        alert('Something went wrong while updating animal.');
     }
 }
 
+function confirmDeleteAnimal(id, name) {
+    if (confirm(`Delete "${name}"?`)) {
+        deleteAnimalById(id).then(async () => {
+            _allDataCache.animals = _allDataCache.animals.filter(a => a.id !== id);
+            _animalPager?.refresh(_allDataCache.animals);
+            const subtitle = document.querySelector('#animals-view .admin-subtitle');
+            if (subtitle) subtitle.textContent = `Overseeing ${_allDataCache.animals.length} animals`;
 
-// Medical Table
-async function initMedicalTable() {
-    const records = await getMedicalRecords();
-
-    await initMedicalProfileCard();
-    await initDashboardTreatments()
-    const pager = createPagination({
-        tbodyId:           'admin-medical-tbody',
-        containerSelector: '#medical-view .admin-table-container'
-    });
-    pager.load(records, renderMedicalRow);
+            _allDataCache = await fetchAllDataCache();
+            
+            initMedicalTable(_allDataCache);
+        });
+    }
 }
 
 async function saveMedicalToDB() {
@@ -703,17 +872,126 @@ async function saveMedicalToDB() {
     if (result.success) {
         document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
         document.body.style.overflow = '';
-        await initMedicalTable();
+        _allDataCache = await fetchAllDataCache()
+        await initMedicalTable(_allDataCache);
         return true
     } else {
         alert('Failed to save medical record.');
     }
 }
 
+// API Endpoint: GET /api/dashboard/stats
+// Response: { totalAnimals, activeMedicalRecords, totalStaff, upcomingEvents }
+async function initDashboardStats(data) {
+    let stats;
+    if (!data) {
+        const res = await getDashboardStats();
+        stats = res;
+    } else {
+        stats = data.stats;
+    }
+
+    const els = {
+        'stat-total-animals': stats.totalAnimals,
+        'stat-medical':       stats.activeMedicalRecords,
+        'stat-staff':         stats.totalStaff,
+        'stat-events':        stats.upcomingEvents
+    };
+    Object.entries(els).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val.toLocaleString();
+    });
+}
+
+async function initAdminAnimalsTable(data) {
+    // Fetch animals and all lookup tables in parallel
+    let animals, categories, zones, cages, diets, staff;
+
+    if (!data) {
+        [animals, categories, zones, cages, diets, staff] = await Promise.all([
+            getAdminAnimals(),
+            getCategories(),
+            getZones(),
+            getCages(),
+            getDiets(),
+            getStaff(),
+        ]);
+    } else {
+        animals = data.animals;
+        categories = data.categories;
+        zones = data.zones;
+        cages = data.cages;
+        diets = data.diets;
+        staff = data.staff
+    }
+
+
+    _allDataCache.animals  = animals;
+    _animalPager = createPagination({
+        tbodyId:           'admin-animals-tbody',
+        containerSelector: '#animals-view .admin-table-container'
+    });
+
+    populateAnimalModalDropdowns(animals, categories, zones, cages, diets);
+    populateMedicalModalDropdowns(animals, staff);
+
+    // Filter state now tracks IDs (null = "show all")
+    const state = { categoryId: null, zoneId: null, dietId: null };
+
+    function getFiltered() {
+        return _allDataCache.animals.filter(a =>
+            (state.categoryId === null || a.categoryId === state.categoryId) &&
+            (state.zoneId     === null || a.zoneId     === state.zoneId)     &&
+            (state.dietId     === null || a.dietId     === state.dietId)
+        );
+    }
+
+    function refresh() {
+        const filtered = getFiltered();
+        _animalPager.load(filtered, renderAnimalRow);
+        const subtitle = document.querySelector('#animals-view .admin-subtitle');
+        if (subtitle) {
+            const zoneCount = new Set(filtered.map(a => a.zone).filter(Boolean)).size;
+            subtitle.textContent = `Overseeing ${filtered.length} animals in ${zoneCount} zones`;
+        }
+    }
+
+    populateAnimalFilterDropdowns(animals, categories, zones, diets, (f) => {
+        Object.assign(state, f);
+        refresh();
+    });
+
+    refresh();
+}
+
+// Medical Table
+async function initMedicalTable(data) {
+    let records;
+    if (!data) {
+        records = await getMedicalRecords();
+    } else {
+        records = data.records;
+    }
+    console.log(data)
+    await initMedicalProfileCard(data);
+    await initDashboardTreatments(data)
+    const pager = createPagination({
+        tbodyId:           'admin-medical-tbody',
+        containerSelector: '#medical-view .admin-table-container'
+    });
+    pager.load(records, renderMedicalRow);
+}
+
+
 
 // Staff Table
-async function initStaffTable() {
-    const staff = await getStaff();
+async function initStaffTable(data) {
+    let staff;
+    if (!data) {
+        staff = await getStaff();
+    } else {
+        staff = data.staff;
+    }
 
     updateStaffStatsGrid(staff);
 
@@ -752,11 +1030,18 @@ async function initStaffTable() {
 }
 
 
-async function initDashboardTreatments() {
-    const [records, animals] = await Promise.all([
-        getMedicalRecords(),
-        getAdminAnimals()
-    ]);
+async function initDashboardTreatments(data) {
+    let records, animals;
+
+    if (!data) {
+        [records, animals] = await Promise.all([
+            getMedicalRecords(),
+            getAdminAnimals()
+        ]);
+    } else {
+        records = data.records;
+        animals = data.animals;
+    }
 
     const list = document.querySelector('.treatments-list');
     if (!list) return;
@@ -813,9 +1098,18 @@ async function initDashboardTreatments() {
     }).join('');
 }
 
-async function initCategoriesDiversity() {
-    const animals    = await getAdminAnimals();
-    const categories = await getCategories();
+async function initCategoriesDiversity(data) {
+    let animals, categories;
+
+    if (!data) {
+        [animals, categories] = await Promise.all([
+            getAdminAnimals(),
+            getCategories()
+        ]);
+    } else {
+        animals = data.animals;
+        categories = data.categories;
+    }
 
     const total = animals.length || 1;
 
@@ -846,8 +1140,15 @@ async function initCategoriesDiversity() {
 }
 
 
-async function initDashboardEvents() {
-    const events = await getEvents();
+async function initDashboardEvents(data) {
+    let events;
+
+    if (!data) {
+        events = await getEvents();
+    } else {
+        events = data.events;
+    }
+
     const grid   = document.querySelector('.admin-events-grid');
     if (!grid) return;
 
@@ -868,17 +1169,29 @@ async function initDashboardEvents() {
         </div>`).join('');
 }
 
-async function initDashboard() {
-    await Promise.all([
-        initDashboardStats(),
-        initDashboardTreatments(),
-        initCategoriesDiversity(),
-        initDashboardEvents()
-    ]);
+async function initDashboard(data) {
+    // await Promise.all([
+    //     initDashboardStats(data),
+    //     initDashboardTreatments(data),
+    //     initCategoriesDiversity(data),
+    //     initDashboardEvents(data)
+    // ]);
+
+    initDashboardStats(data),
+    initDashboardTreatments(data),
+    initCategoriesDiversity(data),
+    initDashboardEvents(data)
 }
 
-async function initMedicalProfileCard() {
-    const records = await getMedicalRecords();
+async function initMedicalProfileCard(data) {
+    let records;
+    if (!data) {
+        records = await getMedicalRecords();
+        animals = await getAdminAnimals();
+    } else {
+        records = data.records;
+        animals = data.animals;
+    }
 
     const card = document.querySelector('.medical-profile-card');
     if (!card) return;
@@ -905,7 +1218,7 @@ async function initMedicalProfileCard() {
     }
 
     const firstRecord = records[0];
-    const animals     = await getAdminAnimals();
+    
     const animal      = animals.find(a => a.id === firstRecord.animalId);
 
     // ── ค่า default เมื่อไม่เจอ animal ──
@@ -980,7 +1293,10 @@ function updateStaffStatsGrid(staff) {
     if (cards[1]) cards[1].textContent = count('Veterinary Staff');
     if (cards[2]) cards[2].textContent = count('Admin');
 }
-document.addEventListener('DOMContentLoaded', () => {
+
+
+
+document.addEventListener('DOMContentLoaded', async () => {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.onsubmit = handleLogin;
@@ -989,11 +1305,21 @@ document.addEventListener('DOMContentLoaded', () => {
             this.style.borderColor = '';
         });
     }
+    
+    const adminContent = document.querySelector('.admin-content');
 
-    if (document.getElementById('dashboard-view')) initDashboard();
-    if (document.getElementById('animals-view'))   initAdminAnimalsTable();
-    if (document.getElementById('medical-view'))   initMedicalTable();
-    if (document.getElementById('staff-view'))     initStaffTable();
+    if (adminContent) {
+        adminContent.style.visibility = 'hidden';
+    }
+
+    _allDataCache = await fetchAllDataCache()
+
+    adminContent.style.visibility = 'visible';
+
+    if (document.getElementById('dashboard-view')) initDashboard(_allDataCache);
+    if (document.getElementById('animals-view'))   initAdminAnimalsTable(_allDataCache);
+    if (document.getElementById('medical-view'))   initMedicalTable(_allDataCache);
+    if (document.getElementById('staff-view'))     initStaffTable(_allDataCache);
 });
 
 

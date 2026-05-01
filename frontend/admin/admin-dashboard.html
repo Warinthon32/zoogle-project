@@ -844,7 +844,7 @@
                     <h3>Categories & Biology</h3>
 
                     <div class="form-group-modal">
-                        <label>Category ID</label>
+                        <label>Category</label>
                         <div class="select-wrapper">
                             <select class="form-control" id="animal-category">
                                 <option></option>
@@ -919,14 +919,14 @@
                         </div>
                     </div>
 
-                    <div class="form-group-modal">
+                    <!-- <div class="form-group-modal">
                         <label>Dangerous Level</label>
                         <div class="select-wrapper">
                             <select class="form-control" id="animal-danger">
                                 <option></option>
                             </select>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="modal-section">
                     <h3>Media</h3>
@@ -958,6 +958,161 @@
             </div>
         </div>
     </div>
+
+    <!-- Edit Animal Modal -->
+
+     <div class="modal-overlay" id="edit-animal-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="confirmCancel()"><svg width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg></button>
+
+            <div class="modal-body">
+                <!-- General Information -->
+                <div class="modal-section">
+                    <h3>ID</h3>
+                    <div class="form-group-modal">
+                        <label></label>
+                        <div class="select-wrapper">
+                            <select class="form-control" id="edit-animal-id">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="modal-section">
+                    <h3>General Infomation</h3>
+
+                    <div class="form-group-modal">
+                        <label>Name</label>
+                        <input type="text" class="form-control" id="edit-animal-name">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Sex</label>
+                        <div class="select-wrapper">
+                            <select class="form-control" id="edit-animal-sex">
+                                <option>Select Sex</option>
+                                <option>Male</option>
+                                <option>Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Birth Date</label>
+                        <input type="date" class="form-control" id="edit-animal-birth-date">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Quantity</label>
+                        <input type="number" class="form-control" id="edit-animal-quantity">
+                    </div>
+                </div>
+
+                <!-- Categories & Biology -->
+                <div class="modal-section">
+                    <h3>Categories & Biology</h3>
+
+                    <div class="form-group-modal">
+                        <label>Category</label>
+                        <div class="select-wrapper">
+                            <select class="form-control" id="edit-animal-category">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Class</label>
+                        <div class="select-wrapper">
+                            <!-- <select class="form-control" id="animal-class">
+                                <option></option>
+                            </select> -->
+                            <input type="text" class="form-control" id="edit-animal-class">
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Science Name</label>
+                        <input type="text" class="form-control" id="edit-animal-sci-name">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Biology Character</label>
+                        <input type="text" class="form-control" id="edit-animal-bio">
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Description</label>
+                        <textarea class="form-control" rows="4" id="edit-animal-description"></textarea>
+                    </div>
+                </div>
+
+                <!-- Management -->
+                <div class="modal-section">
+                    <h3>Management</h3>
+
+                    <div class="form-group-modal">
+                        <label>Zone Name</label>
+                        <div class="select-wrapper">
+                            <select class="form-control" id="edit-animal-zone">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Cage</label>
+                        <div class="select-wrapper">
+                            <select class="form-control" id="edit-animal-cage">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modal">
+                        <label>Parent</label>
+                        <div class="select-wrapper">
+                            <select class="form-control" id="edit-animal-parent">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group-modal">
+                        <label>Diet</label>
+                        <div class="select-wrapper">
+                            <select class="form-control" id="edit-animal-diet">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- <div class="form-group-modal">
+                        <label>Dangerous Level</label>
+                        <div class="select-wrapper">
+                            <select class="form-control" id="edit-animal-danger">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div> -->
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="confirmCancel()">CANCEL</button>
+                    <button class="btn-save" onclick="editAnimal()">EDIT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Cancel Confirmation Modal -->
     <div class="modal-overlay" id="cancel-confirm-modal"
@@ -1118,6 +1273,16 @@
                 if (status != true) return
 
                 alert("Success: Animal data saved to database!");
+                document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
+                document.body.style.overflow = '';
+            });
+        }
+
+        function editAnimal() {
+            updateAnimalInDB().then(status => {
+                if (status != true) return
+
+                alert("Success: Animal data updated to database!");
                 document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
                 document.body.style.overflow = '';
             });
