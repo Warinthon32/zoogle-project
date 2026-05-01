@@ -1,3 +1,18 @@
+USE master;
+GO
+
+-- 1. เช็คและลบฐานข้อมูลเดิมทิ้งเพื่อเริ่มนับ 1 ใหม่ (สำหรับคนเคยมี DB แล้ว)
+IF EXISTS (SELECT * FROM sys.databases WHERE name = 'ZoogleDB')
+BEGIN
+    ALTER DATABASE ZoogleDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE ZoogleDB;
+END
+GO
+
+-- 2. สร้างฐานข้อมูลใหม่
+CREATE DATABASE ZoogleDB;
+GO
+
 USE ZoogleDB;
 GO
 
@@ -180,66 +195,30 @@ BEGIN
 END;
 GO
 
--- เพิ่มสัตว์
-CREATE PROCEDURE sp_add_animal
-    @name VARCHAR(100),
-    @cid INT,
-    @quantity INT
-AS
+CREATE PROCEDURE sp_add_animal @name VARCHAR(100), @cid INT, @quantity INT AS
 BEGIN
-    INSERT INTO Animal(Name, CID, Quantity)
-    VALUES (@name, @cid, @quantity);
+    INSERT INTO Animal(Name, CID, Quantity) VALUES (@name, @cid, @quantity);
 END;
 GO
 
--- ลบสัตว์
-CREATE PROCEDURE sp_delete_animal
-    @aid INT
-AS
+CREATE PROCEDURE sp_delete_animal @aid INT AS
 BEGIN
     DELETE FROM Animal WHERE AID = @aid;
 END;
 GO
 
-
 -- ==========================================
--- Additional Database Features
+-- Additional Features (View, Trigger, Index)
 -- ==========================================
-
-
--- ==========================================
--- VIEW
--- ==========================================
--- รวมข้อมูลสัตว์ทำให้เรียกใช้งานง่าย 
--- ใช้กับหน้า Animal List, Animal Detail, Zoo Map ได้
--- ลดการเขียน JOIN ซ้ำและทำให้ query สั้นลง
-
 CREATE VIEW vw_animal_full_info AS
-SELECT 
-    a.AID,
-    a.Name,
-    a.SciName,
-    a.Quantity,
-    c.CName AS Category,
-    z.ZName AS Zone,
-    ca.DangerousLevel
+SELECT a.AID, a.Name, a.SciName, a.Quantity, c.CName AS Category, z.ZName AS Zone, ca.DangerousLevel
 FROM Animal a
 LEFT JOIN Category c ON a.CID = c.CID
 LEFT JOIN Cage ca ON a.CAID = ca.CAID
 LEFT JOIN Zone z ON ca.ZID = z.ZID;
 GO
 
-
--- ==========================================
--- TRIGGER
--- ==========================================
--- ป้องกันไม่ให้จำนวนสัตว์เป็นค่าติดลบ
--- ใช้ในหน้า Admin (Add, Edit Animal)
-
-CREATE TRIGGER trg_check_animal_quantity
-ON Animal
-AFTER INSERT, UPDATE
-AS
+CREATE TRIGGER trg_check_animal_quantity ON Animal AFTER INSERT, UPDATE AS
 BEGIN
     IF EXISTS (SELECT * FROM inserted WHERE Quantity < 0)
     BEGIN
@@ -249,29 +228,10 @@ BEGIN
 END;
 GO
 
-
--- ==========================================
--- CONSTRAINT
--- ==========================================
--- ควบคุมความถูกต้องของข้อมูล
-
-ALTER TABLE Staff
-ADD CONSTRAINT chk_salary_positive
-CHECK (Salary >= 0);
+ALTER TABLE Staff ADD CONSTRAINT chk_salary_positive CHECK (Salary >= 0);
 GO
-
-ALTER TABLE Animal
-ADD CONSTRAINT chk_animal_sex
-CHECK (Sex IN ('m','f','o'));
+ALTER TABLE Animal ADD CONSTRAINT chk_animal_sex CHECK (Sex IN ('m','f','o'));
 GO
-
-
-
--- ==========================================
--- INDEX
--- ==========================================
--- ทำให้ค้นหาได้ดีขึ้น (Search, Login)
-
 CREATE INDEX idx_animal_name ON Animal(Name);
 GO
 CREATE INDEX idx_staff_username ON Staff(Username);
