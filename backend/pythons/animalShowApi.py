@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort, Blueprint
 import pyodbc
-
+import config
 # app = Flask(__name__)
 
 MEDIA_BASE_URL = "http://127.0.0.1:5500/frontend/images/"
@@ -29,9 +29,9 @@ def _format_animal_row(row):
         "sciName": row.SciName,
         "category": row.Category,
         "zone": row.Zone,
-        "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None,
+        "image": config.BACKEND_URL + str(row.MainImage),
+        # (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None,
         "dangerLevel": row.DangerousLevel,
-        "birthDate": row.BirthDate
     }
 
 
@@ -46,7 +46,7 @@ def get_all_animals():
 
         query = """
             SELECT
-                v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel, v.BirthDate,
+                v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel,
                 (
                     SELECT TOP 1 m.MediaURL
                     FROM MediaURL m
@@ -62,7 +62,9 @@ def get_all_animals():
         else:
             cursor.execute(query)
 
+
         animals = [_format_animal_row(row) for row in cursor.fetchall()]
+
         return jsonify(animals)
 
     except Exception as e:
@@ -164,7 +166,16 @@ def get_animal_detail(id):
             WHERE hm.AID = ?
         """
         cursor2.execute(image_query, (id,))
-        images = [(MEDIA_BASE_URL + r[0]) for r in cursor2.fetchall() if r[0]]
+        # images = [(MEDIA_BASE_URL + r[0]) for r in cursor2.fetchall() if r[0]]
+        # images = [r[0] for r in cursor2.fetchall() if r[0]]
+
+        images = [
+            config.BACKEND_URL + r[0]
+            for r in cursor2.fetchall()
+            if r[0]
+        ]
+
+        print(images)
 
         animal_detail = {
             "id": row.AID,

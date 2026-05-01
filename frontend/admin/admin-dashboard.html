@@ -892,7 +892,7 @@
                     </div>
 
                     <div class="form-group-modal">
-                        <label>Cage ID</label>
+                        <label>Cage</label>
                         <div class="select-wrapper">
                             <select class="form-control" id="animal-cage">
                                 <option></option>
@@ -901,13 +901,14 @@
                     </div>
 
                     <div class="form-group-modal">
-                        <label>Parent ID</label>
+                        <label>Parent</label>
                         <div class="select-wrapper">
                             <select class="form-control" id="animal-parent">
                                 <option></option>
                             </select>
                         </div>
                     </div>
+
 
                     <div class="form-group-modal">
                         <label>Diet</label>
@@ -924,6 +925,27 @@
                             <select class="form-control" id="animal-danger">
                                 <option></option>
                             </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-section">
+                    <h3>Media</h3>
+                    <div class="form-group-modal">
+                        <label>Animal Image</label>
+                        <div class="image-upload-wrapper">
+                            <input type="file" id="animal-image" accept="image/*" style="display:none"
+                                onchange="previewAnimalImage(this)">
+                            <div class="image-preview-box" onclick="document.getElementById('animal-image').click()">
+                                <img id="animal-image-preview" src="" alt="" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:8px;">
+                                <div id="image-upload-placeholder">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.5">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <polyline points="21 15 16 10 5 21"/>
+                                    </svg>
+                                    <p style="margin:6px 0 0; color:#aaa; font-size:0.8rem;">Click to upload image</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1044,8 +1066,9 @@
     </div>
 </body>
 
-   <script src="../js/api-config.js"></script>
+    <script src="../js/api-config.js"></script>
     <script src="../js/admin.js"></script>
+    <script src="../js/upload.js"></script>
     <script>
         function switchView(viewId, element) {
             const links = document.querySelectorAll('.sidebar-nav .nav-link');
@@ -1093,7 +1116,7 @@
         function saveAnimal() {
             saveAnimalToDB().then(status => {
                 if (status != true) return
-                
+
                 alert("Success: Animal data saved to database!");
                 document.querySelectorAll('.modal-overlay').forEach(modal => modal.classList.remove('active'));
                 document.body.style.overflow = '';

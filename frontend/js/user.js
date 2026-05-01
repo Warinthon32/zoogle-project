@@ -148,7 +148,7 @@ function renderAnimalCard(animal) {
     return `
         <div class="animal-card list-card">
             <div class="card-image-wrapper">
-                <img src="../images/${(animal.image || '').split('/').pop()}" alt="${animal.name}"
+                <img src="${animal.image}" alt="${animal.name}"
                      onerror="this.src='../images/unicorn.png'">
             </div>
             <div class="card-content">
@@ -157,7 +157,7 @@ function renderAnimalCard(animal) {
                     <span class="tag green">${animal.category}</span>
                     <span class="tag brown">${animal.zone}</span>
                 </div>
-                <p>${animal.description}</p>
+                <p>${animal.description || ""}</p>
                 <button class="btn-full-width"
                     onclick="window.location.href='animal-detail.html?id=${animal.id}'">
                     View Details
@@ -188,7 +188,7 @@ async function initAnimalsPage() {
     }
 
     let allAnimals = await getAnimals();
-    console.log("GET all animals: ", allAnimals)
+    // console.log("GET all animals: ", allAnimals)
     renderList(allAnimals);
 
     // Quick filter pill buttons
@@ -218,7 +218,7 @@ async function initAnimalsPage() {
 async function initAnimalDetailPage() {
     const id = new URLSearchParams(window.location.search).get('id') || 1;
     const animal = await getAnimalById(id);
-
+    
     if (!animal) {
         document.body.innerHTML = '<p style="padding:2rem;text-align:center;">Animal not found.</p>';
         return;
@@ -236,14 +236,18 @@ async function initAnimalDetailPage() {
     // Breadcrumb
     set('#detail-breadcrumb', animal.name);
 
+    console.log(animal.image)
+
     // Hero
-    set('#detail-hero-img', `../images/${(animal.image || '').split('/').pop()}`, 'src');
+    set('#detail-hero-img', `${animal.image}`, 'src');
     set('#detail-hero-img', animal.name, 'alt');
     set('#detail-name', animal.name);
     set('#detail-sci-name', animal.sciName);
     set('#detail-hero-desc', animal.description);
     set('#detail-category-tag', animal.category);
     set('#detail-zone-tag', animal.zone + ' Zone');
+    
+
 
     // Info cards
     set('#detail-long-desc', animal.longDescription);
@@ -252,7 +256,7 @@ async function initAnimalDetailPage() {
 
     // Gallery (set all gallery images to this animal)
     document.querySelectorAll('.gallery-img').forEach(img => {
-        img.src = `../images/${(animal.image || '').split('/').pop()}`;
+        img.src = `${animal.image}`;
         img.alt = animal.name;
     });
 }

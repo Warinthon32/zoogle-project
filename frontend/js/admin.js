@@ -146,6 +146,15 @@ async function getHasMedia() {
     return apiGet('/has-media');
 }
 
+async function getAnimalMainMedia(animalId) {
+    if (!animalId) {
+        console.log("getMainMedia no AID")
+        return null;
+    }
+
+    return apiGet(`/animal/${animalId}/media/main`);
+}
+
 async function getDashboardStats() {
     if (USE_MOCK) return { ...MOCK_DASHBOARD_STATS };
     return apiGet('/dashboard/stats');
@@ -448,7 +457,7 @@ function renderAnimalRow(a) {
         <tr id="animal-row-${a.id}">
             <td>
                 <div class="table-animal-info">
-                    <img src="../images/${(a.image || '').split('/').pop()}" alt="${a.name}"
+                    <img src="${a.image}" alt="${a.name}"
                          onerror="this.src='../images/unicorn.png'">
                     <div>
                         <strong>${a.name}</strong>
@@ -568,83 +577,82 @@ async function initAdminAnimalsTable() {
 
 async function saveAnimalToDB() {
     const formData = {
-        name:         document.getElementById('animal-name')?.value?.trim()  || '',
+        name:         document.getElementById('animal-name')?.value?.trim()     || '',
         sciName:      document.getElementById('animal-sci-name')?.value?.trim() || '',
-        sex:          (document.getElementById('animal-sex')?.value            || '').toLowerCase(),
-        birthDate:    document.getElementById('animal-birth-date')?.value     || '',
+        sex:          (document.getElementById('animal-sex')?.value             || '').toLowerCase(),
+        birthDate:    document.getElementById('animal-birth-date')?.value       || '',
         quantity:     parseInt(document.getElementById('animal-quantity')?.value)    || 1,
-
-
         categoryId:   parseInt(document.getElementById('animal-category')?.value)   || null,
         class:        document.getElementById('animal-class')?.value                || '',
         bioCharacter: document.getElementById('animal-bio')?.value                  || '',
         description:  document.getElementById('animal-description')?.value          || '',
-
         zoneId:       parseInt(document.getElementById('animal-zone')?.value)       || null,
         cageId:       parseInt(document.getElementById('animal-cage')?.value)       || null,
         parentId:     parseInt(document.getElementById('animal-parent')?.value)     || null,
         dietId:       parseInt(document.getElementById('animal-diet')?.value)       || null,
-
         dangerLevel:  parseInt(document.getElementById('animal-danger')?.value)     || 1
     };
 
     const requiredFields = [
-        { key: 'name', label: 'Animal name' },
-        { key: 'sciName', label: 'Scientific name' },
-        { key: 'sex', label: 'Sex' },
-        { key: 'class', label: 'Class' },
-        { key: 'birthDate', label: 'Birth date' },
+        { key: 'name',       label: 'Animal name' },
+        { key: 'sciName',    label: 'Scientific name' },
+        { key: 'sex',        label: 'Sex' },
+        { key: 'class',      label: 'Class' },
+        { key: 'birthDate',  label: 'Birth date' },
         { key: 'categoryId', label: 'Category' },
-        { key: 'zoneId', label: 'Zone' },
-        { key: 'cageId', label: 'Cage' },
-        { key: 'dietId', label: 'Diet' }
+        { key: 'zoneId',     label: 'Zone' },
+        { key: 'cageId',     label: 'Cage' },
+        { key: 'dietId',     label: 'Diet' },
     ];
 
-    for (const field of requiredFields) {
-        if (!formData[field.key]) {
-            alert(`Please enter ${field.label}.`);
-            return;
-        }
+    for (const f of requiredFields) {
+        if (!formData[f.key]) { alert(`Please enter ${f.label}.`); return; }
     }
 
-    const sex_map = {
-        male: "m",
-        female: "f"
-    };
+    const sex_map = { male: 'm', female: 'f' };
+    formData.sex = sex_map[formData.sex] ?? formData.sex;
 
-    formData.sex = sex_map[formData.sex];
 
     try {
         const result = await addAnimal(formData);
-
         if (result.success) {
-            document.querySelectorAll('.modal-overlay')
-                .forEach(m => m.classList.remove('active'));
+            const imageResult = await uploadAnimalImage(result.aid);
+            if (imageResult) console.log('Image uploaded:', imageResult.url);
 
+            resetImageUpload();
+            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
             document.body.style.overflow = '';
 
-            // Re-fetch so local array stays in sync with DB
+            // reload ข้อมูลใหม่ทั้งหมด
             const [animals, categories, zones, cages, diets] = await Promise.all([
-                getAdminAnimals(),
-                getCategories(),
-                getZones(),
-                getCages(),
-                getDiets()
+                getAdminAnimals(), getCategories(), getZones(), getCages(), getDiets()
             ]);
+
+            // โหลด mainImage ให้ทุกตัว
+            const mediaResults = await Promise.allSettled(
+                animals.map(a => getAnimalMainMedia(a.id))
+            );
+            animals.forEach((a, i) => {
+                const res = mediaResults[i];
+                a.mainImage = res.status === 'fulfilled' && res.value?.url
+                    ? res.value.url
+                    : '../images/unicorn.png';
+            });
 
             _allAnimals = animals;
             _animalPager?.refresh(_allAnimals);
-
             populateAnimalModalDropdowns(_allAnimals, categories, zones, cages, diets);
 
             const subtitle = document.querySelector('#animals-view .admin-subtitle');
-            if (subtitle) subtitle.textContent = `Overseeing ${_allAnimals.length} animals`;
+            if (subtitle) {
+                const zoneCount = new Set(_allAnimals.map(a => a.zone).filter(Boolean)).size;
+                subtitle.textContent = `Overseeing ${_allAnimals.length} animals in ${zoneCount} zones`;
+            }
 
             return true;
         } else {
             alert('Failed to save animal.');
         }
-
     } catch (err) {
         console.error('Save animal error:', err);
         alert('Something went wrong while saving animal.');
@@ -658,6 +666,7 @@ function confirmDeleteAnimal(id, name) {
             _animalPager?.refresh(_allAnimals);
             const subtitle = document.querySelector('#animals-view .admin-subtitle');
             if (subtitle) subtitle.textContent = `Overseeing ${_allAnimals.length} animals`;
+            initMedicalTable();
         });
     }
 }
@@ -668,7 +677,7 @@ async function initMedicalTable() {
     const records = await getMedicalRecords();
 
     await initMedicalProfileCard();
-
+    await initDashboardTreatments()
     const pager = createPagination({
         tbodyId:           'admin-medical-tbody',
         containerSelector: '#medical-view .admin-table-container'
@@ -694,7 +703,7 @@ async function saveMedicalToDB() {
     if (result.success) {
         document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
         document.body.style.overflow = '';
-        initMedicalTable();
+        await initMedicalTable();
         return true
     } else {
         alert('Failed to save medical record.');
@@ -752,14 +761,31 @@ async function initDashboardTreatments() {
     const list = document.querySelector('.treatments-list');
     if (!list) return;
 
-    list.innerHTML = records.slice(0, 3).map(r => {
+    // ── ค่า default เมื่อไม่มีข้อมูล ──
+    if (!records.length) {
+        list.innerHTML = `
+        <div class="treatment-item" style="justify-content:center;color:#aaa;padding:1.5rem 0">
+            <p>No medical records available.</p>
+        </div>`;
+        return;
+    }
+
+    // ── โหลด mainImage เฉพาะสัตว์ที่ใช้ใน 3 records แรก ──
+    const topRecords = records.slice(0, 3);
+    const uniqueAIDs = [...new Set(topRecords.map(r => r.animalId))];
+    const mediaMap   = {};
+
+    await Promise.allSettled(
+        uniqueAIDs.map(async aid => {
+            const res = await getAnimalMainMedia(aid);
+            mediaMap[aid] = res?.url || '../images/unicorn.png';
+        })
+    );
+
+    list.innerHTML = topRecords.map(r => {
         const animal = animals.find(a => a.id === r.animalId);
-        const img    = animal?.mainImage || animal?.image || 'unicorn.png';
+        const img    = mediaMap[r.animalId] || '../images/unicorn.png';
         const name   = animal?.name ?? `Animal #${r.animalId}`;
-        // console.log(records)
-        // console.log(animals)
-        // console.log(animal)
-        // console.log(name)
 
         const statusClass = r.status === 'HEALTHY'    ? 'completed'
                           : r.status === 'MONITORING' ? 'in-progress'
@@ -773,7 +799,7 @@ async function initDashboardTreatments() {
 
         return `
         <div class="treatment-item">
-            <img src="../images/${img.split('/').pop()}" alt="${name}"
+            <img src="${img}" alt="${name}"
                  onerror="this.src='../images/unicorn.png'">
             <div class="treatment-info">
                 <h4>${name}</h4>
@@ -853,39 +879,74 @@ async function initDashboard() {
 
 async function initMedicalProfileCard() {
     const records = await getMedicalRecords();
-    if (!records.length) return;
-
-    const firstRecord  = records[0];
-    const animals      = await getAdminAnimals();
-    const animal       = animals.find(a => a.id === firstRecord.animalId);
-    if (!animal) return;
-    
-    const age = animal.birthDate
-        ? Math.floor((new Date() - new Date(animal.birthDate)) / (365.25 * 24 * 60 * 60 * 1000))
-        : null;
-
-    const latestStatus = firstRecord.status ?? 'UNKNOWN';
-    const assignedVet  = firstRecord.staffName || '—';
-    const lastCheckup  = firstRecord.checkupDate ?? '—';
-
-    // status tag class
-    const statusTagClass = latestStatus === 'HEALTHY'    ? 'tag-healthy'
-                         : latestStatus === 'INJURED'    ? 'tag-injured'
-                         : latestStatus === 'CRITICAL'   ? 'tag-critical'
-                         : 'tag-healthy';
-
-    // sex tag
-    const sexLabel    = animal.sex === 'm' ? 'MALE' : animal.sex === 'f' ? 'FEMALE' : '—';
-    const sexTagClass = animal.sex === 'm' ? 'tag-male' : 'tag-female';
 
     const card = document.querySelector('.medical-profile-card');
     if (!card) return;
 
+    // ── ค่า default เมื่อไม่มีข้อมูล ──
+    if (!records.length) {
+        const img = card.querySelector('.medical-profile-img');
+        if (img) { img.src = '../images/unicorn.png'; img.alt = 'No animal'; }
+
+        const h2 = card.querySelector('h2');
+        if (h2) h2.textContent = 'No Records';
+
+        const tags = card.querySelector('.tags');
+        if (tags) tags.innerHTML = `<span class="tag-healthy">—</span>`;
+
+        const sub = card.querySelector('.medical-profile-sub');
+        if (sub) sub.textContent = 'No animal data available';
+
+        const boxes = card.querySelectorAll('.info-box-value');
+        if (boxes[0]) boxes[0].textContent = '—';
+        if (boxes[1]) boxes[1].textContent = '—';
+        if (boxes[2]) boxes[2].textContent = '—';
+        return;
+    }
+
+    const firstRecord = records[0];
+    const animals     = await getAdminAnimals();
+    const animal      = animals.find(a => a.id === firstRecord.animalId);
+
+    // ── ค่า default เมื่อไม่เจอ animal ──
+    if (!animal) {
+        const h2 = card.querySelector('h2');
+        if (h2) h2.textContent = `Animal #${firstRecord.animalId}`;
+
+        const sub = card.querySelector('.medical-profile-sub');
+        if (sub) sub.textContent = 'Animal data not found';
+
+        const boxes = card.querySelectorAll('.info-box-value');
+        if (boxes[0]) boxes[0].textContent = '—';
+        if (boxes[1]) boxes[1].textContent = firstRecord.checkupDate ?? '—';
+        if (boxes[2]) boxes[2].textContent = firstRecord.staffName   ?? '—';
+        return;
+    }
+
+    const age = animal.birthDate
+        ? Math.floor((new Date() - new Date(animal.birthDate)) / (365.25 * 24 * 60 * 60 * 1000))
+        : null;
+
+    const latestStatus = firstRecord.status    ?? 'UNKNOWN';
+    const assignedVet  = firstRecord.staffName ?? '—';
+    const lastCheckup  = firstRecord.checkupDate ?? '—';
+
+    const statusTagClass = latestStatus === 'HEALTHY'  ? 'tag-healthy'
+                         : latestStatus === 'INJURED'  ? 'tag-injured'
+                         : latestStatus === 'CRITICAL' ? 'tag-critical'
+                         : 'tag-healthy';
+
+    const sexLabel    = animal.sex === 'm' ? 'MALE' : animal.sex === 'f' ? 'FEMALE' : '—';
+    const sexTagClass = animal.sex === 'm' ? 'tag-male' : animal.sex === 'f' ? 'tag-female' : 'tag-healthy';
+
+    // ── ดึง mainImage จาก API ──
+    const media  = await getAnimalMainMedia(animal.id);
+    const imgUrl = media?.url || '../images/unicorn.png';
+    console.log(imgUrl)
     const img = card.querySelector('.medical-profile-img');
     if (img) {
-        const imgFile = (animal.image || '').split('/').pop() || 'unicorn.png';
-        img.src = `../images/${imgFile}`;
-        img.alt = animal.name;
+        img.src     = imgUrl;
+        img.alt     = animal.name;
         img.onerror = () => { img.src = '../images/unicorn.png'; };
     }
 
@@ -898,7 +959,7 @@ async function initMedicalProfileCard() {
         <span class="${sexTagClass}">${sexLabel}</span>`;
 
     const sub = card.querySelector('.medical-profile-sub');
-    if (sub) sub.textContent = `${animal.sciName} — ID : ${animal.id}`;
+    if (sub) sub.textContent = `${animal.sciName ?? '—'} — ID : ${animal.id}`;
 
     const boxes = card.querySelectorAll('.info-box-value');
     if (boxes[0]) boxes[0].textContent = age !== null ? `${age} Years` : '—';

@@ -1,7 +1,9 @@
-from flask import Flask, jsonify, request, abort, Blueprint
+from flask import Flask, jsonify, request, abort, Blueprint, send_from_directory
 import pyodbc
+from datetime import datetime
+import config
 
-MEDIA_BASE_URL = "http://127.0.0.1:5500/frontend/images/"
+from pythons.uploadFile import save_upload, delete_animal_files
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -20,16 +22,7 @@ def get_db_connection():
         print("DB Connection Error:", e)
         raise
 
-def _format_animal_row(row):
-    return {
-        "id": row.AID,
-        "name": row.Name,
-        "sciName": row.SciName,
-        "category": row.Category,
-        "zone": row.Zone,
-        "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None,
-        "dangerLevel": row.DangerousLevel
-    }
+
 
 @admin_bp.route('/admin_animals', methods=['GET'])
 def get_all_admin_animals():
@@ -105,8 +98,11 @@ def get_all_admin_animals():
                 "zone":         data["Zone"],
                 "dietId":       data["DID"],
                 "diet":         data["Diet"],
-                "image":        data["MainImage"]
+                "image":        config.BACKEND_URL + data["MainImage"]
             })
+
+        for item in result:
+            print(item["image"])
 
         return jsonify(result)
 
@@ -118,14 +114,70 @@ def get_all_admin_animals():
         if conn:
             conn.close()
 
+
+@admin_bp.route('/uploads/animals/<path:filename>')
+def serve_upload_file(filename):
+    return send_from_directory(config.UPLOAD_FOLDER, filename)
+
+@admin_bp.route('/upload/image', methods=['POST'])
+def upload_image():
+    conn = None
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file provided"}), 400
+
+        animal_id = request.form.get('animalId')
+        if not animal_id or not animal_id.isdigit():
+            return jsonify({"error": "Missing or invalid animalId"}), 400
+
+        animal_id = int(animal_id)
+        file = request.files['image']
+
+        try:
+            result = save_upload(file, animal_id)   # ← ส่ง AID เข้าไป
+        except ValueError as ve:
+            return jsonify({"error": str(ve)}), 400
+
+        public_url = f"{config.UPLOAD_API}/{result['filename']}"
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO Gallery (MediaType) VALUES (?);
+            SELECT SCOPE_IDENTITY();
+        """, ('image',))
+        cursor.nextset()
+        mid = int(cursor.fetchone()[0])
+
+        cursor.execute(
+            "INSERT INTO MediaURL (MID, MediaURL) VALUES (?, ?)",
+            (mid, public_url)
+        )
+
+        # โยง Has_Media กับ animal
+        cursor.execute(
+            "INSERT INTO Has_Media (AID, MID, UploadDate) VALUES (?, ?, ?)",
+            (animal_id, mid, datetime.now())
+        )
+
+        conn.commit()
+        return jsonify({"success": True, "url": public_url, "mid": mid})
+
+    except Exception as e:
+        print("Error /upload/image:", e)
+        return jsonify({"error": "Upload failed"}), 500
+    finally:
+        if conn:
+            conn.close()
+
 @admin_bp.route('/animals', methods=['POST'])
 def save_animals():
     conn = None
     try:
-        conn = get_db_connection()
+        conn   = get_db_connection()
         cursor = conn.cursor()
-
-        data = request.get_json()
+        data   = request.get_json()
 
         cursor.execute("""
             DECLARE @NewAID INT;
@@ -138,35 +190,41 @@ def save_animals():
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
             SET @NewAID = SCOPE_IDENTITY();
-
             SELECT @NewAID;
         """, (
             data.get("name"),
             data.get("sciName"),
-            data.get("bioCharacter") or None,
+            data.get("bioCharacter")  or None,
             data.get("sex"),
-            data.get("birthDate") or None,
-            data.get("quantity") or 1,
+            data.get("birthDate")     or None,
+            data.get("quantity")      or 1,
             data.get("class"),
-            data.get("description") or None,
+            data.get("description")   or None,
             data.get("categoryId"),
-            data.get("parentId") or None,
+            data.get("parentId")      or None,
             data.get("cageId"),
         ))
 
         cursor.nextset()
-        row = cursor.fetchone()
-        new_aid = int(row[0])
+        new_aid = int(cursor.fetchone()[0])
 
+        # Diet
         if new_aid and data.get("dietId"):
             cursor.execute("""
-                INSERT INTO Consumes (DID, AID)
-                VALUES (?, ?)
+                INSERT INTO Consumes (DID, AID) VALUES (?, ?)
             """, (data.get("dietId"), new_aid))
-      
+
+        # ถ้ามี mediaId ให้ link Has_Media
+        if new_aid and data.get("mediaId"):
+            from datetime import datetime
+            cursor.execute("""
+                INSERT INTO Has_Media (MID, AID, UploadDate)
+                VALUES (?, ?, ?)
+            """, (data.get("mediaId"), new_aid, datetime.now()))
+
         conn.commit()
 
-        return jsonify({"success": True})
+        return jsonify({"success": True, "aid": new_aid})
 
     except Exception as e:
         print("Error /animals:", e)
@@ -176,6 +234,45 @@ def save_animals():
         if conn:
             conn.close()
 
+def delete_has_media_by_animal(cursor, aid: int):
+    # หา MID ทั้งหมดของ animal นี้
+    cursor.execute("""
+        SELECT MID FROM Has_Media WHERE AID = ?
+    """, (aid,))
+    
+    mids = [row[0] for row in cursor.fetchall()]
+
+    # ลบ relation
+    cursor.execute("DELETE FROM Has_Media WHERE AID = ?", (aid,))
+
+    # ลบ media
+    for mid in mids:
+        cursor.execute("SELECT COUNT(*) FROM Has_Media WHERE MID = ?", (mid,))
+        count = cursor.fetchone()[0]
+
+        if count == 0:
+            cursor.execute("DELETE FROM MediaURL WHERE MID = ?", (mid,))
+            cursor.execute("DELETE FROM Gallery WHERE MID = ?", (mid,))
+
+def delete_health_records_by_animal(cursor, aid: int):
+    # หา HID
+    cursor.execute("""
+        SELECT HID FROM Has_Record WHERE AID = ?
+    """, (aid,))
+    
+    hids = [row[0] for row in cursor.fetchall()]
+
+    # ลบ relation
+    cursor.execute("DELETE FROM Has_Record WHERE AID = ?", (aid,))
+
+    # ลบ records
+    for hid in hids:
+        cursor.execute("SELECT COUNT(*) FROM Has_Record WHERE HID = ?", (hid,))
+        count = cursor.fetchone()[0]
+
+        if count == 0:
+            cursor.execute("DELETE FROM HealthRecord WHERE HID = ?", (hid,))
+
 
 @admin_bp.route('/animals/<int:aid>', methods=['DELETE'])
 def del_animals(aid):
@@ -184,15 +281,27 @@ def del_animals(aid):
         conn = get_db_connection()
         cursor = conn.cursor()
 
+        #ลบ ทำให้ parent ของ animal อื่น null
+
+        cursor.execute("""
+            UPDATE Animal
+            SET ParentID = NULL
+            WHERE ParentID = ?
+        """, (aid,))
+
         #ลบ child tables
         cursor.execute("DELETE FROM Consumes WHERE AID = ?", (aid,))
-        cursor.execute("DELETE FROM Has_Media WHERE AID = ?", (aid,))
-        cursor.execute("DELETE FROM Has_Record WHERE AID = ?", (aid,))
         cursor.execute("DELETE FROM Participates WHERE AID = ?", (aid,))
+
+        delete_health_records_by_animal(cursor, aid)
+        delete_has_media_by_animal(cursor, aid)
 
         # ลบ parent
         cursor.execute("DELETE FROM Animal WHERE AID = ?", (aid,))
+
         conn.commit()
+
+        delete_animal_files(aid)
 
         if cursor.rowcount == 0:
             return jsonify({
@@ -495,6 +604,39 @@ def get_consumes():
     conn.close()
     return jsonify(result)
 
+@admin_bp.route('/animal/<int:aid>/media/main', methods=['GET'])
+def get_animal_media_url_main(aid):
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT TOP 1 m.MediaURL, hm.UploadDate, hm.MID
+            FROM Has_Media hm
+            JOIN MediaURL m ON hm.MID = m.MID
+            WHERE hm.AID = ?
+            ORDER BY hm.UploadDate ASC
+        """, (aid,))
+
+        row = cursor.fetchone()
+
+        if not row:
+            return jsonify({"url": None})
+
+        return jsonify({
+            "mid": row[2],
+            "url": config.BACKEND_URL + str(row[0]),
+            "uploadDate": row[1]
+        })
+
+    except Exception as e:
+        print(f"Error /animal-media/{aid}:", e)
+        return jsonify({"error": "Internal Server Error"}), 500
+
+    finally:
+        if conn:
+            conn.close()
 
 @admin_bp.route('/has-media', methods=['GET'])
 def get_has_media():
@@ -511,7 +653,7 @@ def get_has_media():
         {
             "aid": row.AID,
             "mid": row.MID,
-            "url": row.MediaURL,
+            "url": config.BACKEND_URL + str(row.MediaURL),
             "uploadDate": str(row.UploadDate) if row.UploadDate else None
         }
         for row in cursor.fetchall()

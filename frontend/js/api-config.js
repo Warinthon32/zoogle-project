@@ -12,6 +12,7 @@ async function apiGet(endpoint) {
     return res.json();
 }
 
+
 // POST →  POST /api/<endpoint>   (ต้อง login ก่อน — ส่ง token ด้วย)
 async function apiPost(endpoint, data) {
     const token = sessionStorage.getItem('authToken');
@@ -50,6 +51,28 @@ async function apiDelete(endpoint) {
             throw new Error(err.error || `DELETE ${endpoint} failed: ${res.status}`);
         }
         return true;
+    } catch (e) {
+        alert(`Error: ${e.message}`);
+        throw e;
+    }
+}
+
+
+async function apiPostFormData(endpoint, formData) {
+    const token = sessionStorage.getItem('authToken');
+    try {
+        const res = await fetch(API_BASE_URL + endpoint, {
+            method: 'POST',
+            headers: {
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            },
+            body: formData
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || `POST ${endpoint} failed: ${res.status}`);
+        }
+        return res.json();
     } catch (e) {
         alert(`Error: ${e.message}`);
         throw e;
