@@ -8,7 +8,7 @@ MEDIA_BASE_URL = "http://127.0.0.1:5500/frontend/images/"
 
 def get_db_connection():
     try:
-        server = 'LAPTOP-TAELV2HA\\armer'
+        server = 'LAPTOP-36BAGJ2R\\pain'
         database = 'ZoogleDB'
         conn_str = (
             "DRIVER={ODBC Driver 17 for SQL Server};"
@@ -16,7 +16,7 @@ def get_db_connection():
             "DATABASE=ZoogleDB;"
             "Trusted_Connection=yes;"
             "TrustServerCertificate=yes;"
-)
+        )
         return pyodbc.connect(conn_str)
         print("✅ DB Connected successfully!")
     except Exception as e:
@@ -33,7 +33,12 @@ def _format_animal_row(row):
         "zone": row.Zone,
         "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None,
         "dangerLevel": row.DangerousLevel,
-        "description": row.Description
+        "description": row.Description,
+        "diet": row.DietType,
+        "foodInfo": row.FoodInfo,
+        "zoneName": row.Zone,
+        "zoneTheme": row.Theme,
+        "zoneWeather": row.Weather
     }
 
 
@@ -50,6 +55,10 @@ def get_all_animals():
     SELECT
         v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel,
         a.Description,
+        d.DietType,
+        d.Description AS FoodInfo,
+        z.Theme,
+        z.Weather,
         (
             SELECT TOP 1 m.MediaURL
             FROM MediaURL m
@@ -58,6 +67,10 @@ def get_all_animals():
         ) AS MainImage
     FROM vw_animal_full_info v
     JOIN Animal a ON v.AID = a.AID
+    LEFT JOIN Consumes con ON a.AID = con.AID
+    LEFT JOIN Diet d ON con.DID = d.DID
+    LEFT JOIN Cage ca ON a.CAID = ca.CAID
+    LEFT JOIN Zone z ON ca.ZID = z.ZID
 """
 
         if category:
@@ -101,7 +114,7 @@ def search_animals():
                 "zone": row.ZoneName,
                 "description": row.Description,
                 "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None
-})
+            })
 
         return jsonify(animals)
 
@@ -156,7 +169,18 @@ def get_animal_detail(id):
         conn = get_db_connection()
 
         cursor1 = conn.cursor()
-        cursor1.execute("{CALL sp_get_animal_detail(?)}", (id,))
+        cursor1.execute("""
+            SELECT a.*, c.CName AS CategoryName, z.ZName AS ZoneName,
+                   ca.DangerousLevel, z.Theme, z.Weather,
+                   d.DietType, d.Description AS FoodInfo
+            FROM Animal a
+            LEFT JOIN Category c ON a.CID = c.CID
+            LEFT JOIN Cage ca ON a.CAID = ca.CAID
+            LEFT JOIN Zone z ON ca.ZID = z.ZID
+            LEFT JOIN Consumes con ON a.AID = con.AID
+            LEFT JOIN Diet d ON con.DID = d.DID
+            WHERE a.AID = ?
+        """, (id,))
         row = cursor1.fetchone()
 
         if not row:
@@ -177,14 +201,18 @@ def get_animal_detail(id):
             "name": row.Name,
             "sciName": row.SciName,
             "description": row.Description,
-            "longDescription": row.BioCharacter,
             "sex": row.Sex,
             "quantity": row.Quantity,
             "category": row.CategoryName,
             "zone": row.ZoneName,
             "dangerLevel": row.DangerousLevel,
             "image": images[0] if images else None,
-            "images": images
+            "images": images,
+            "diet": row.DietType,
+            "foodInfo": row.FoodInfo,
+            "zoneName": row.ZoneName,
+            "zoneTheme": row.Theme,
+            "zoneWeather": row.Weather
         }
 
         return jsonify(animal_detail)
