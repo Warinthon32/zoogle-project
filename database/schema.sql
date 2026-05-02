@@ -236,3 +236,22 @@ CREATE INDEX idx_animal_name ON Animal(Name);
 GO
 CREATE INDEX idx_staff_username ON Staff(Username);
 GO
+ALTER PROCEDURE sp_search_animals @p_keyword VARCHAR(255) AS
+BEGIN
+    SELECT 
+        a.AID, a.Name, a.SciName, a.Class, a.Description, 
+        c.CName AS CategoryName, z.ZName AS ZoneName,
+        (
+            SELECT TOP 1 m.MediaURL
+            FROM MediaURL m
+            JOIN Has_Media hm ON m.MID = hm.MID
+            WHERE hm.AID = a.AID
+        ) AS MainImage
+    FROM Animal a
+    LEFT JOIN Category c ON a.CID = c.CID
+    LEFT JOIN Cage ca ON a.CAID = ca.CAID
+    LEFT JOIN Zone z ON ca.ZID = z.ZID
+    WHERE a.Name LIKE CONCAT('%', @p_keyword, '%')
+       OR a.SciName LIKE CONCAT('%', @p_keyword, '%')
+       OR c.CName LIKE CONCAT('%', @p_keyword, '%');
+END;

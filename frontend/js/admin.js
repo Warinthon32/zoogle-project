@@ -1313,13 +1313,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     _allDataCache = await fetchAllDataCache()
+    
+    const tasks = [];
+
+    if (document.getElementById('dashboard-view')) tasks.push(initDashboard(_allDataCache));
+    if (document.getElementById('animals-view'))   tasks.push(initAdminAnimalsTable(_allDataCache));
+    if (document.getElementById('medical-view'))   tasks.push(initMedicalTable(_allDataCache));
+    if (document.getElementById('staff-view'))     tasks.push(initStaffTable(_allDataCache));
+
+    await Promise.all(tasks);
 
     adminContent.style.visibility = 'visible';
-
-    if (document.getElementById('dashboard-view')) initDashboard(_allDataCache);
-    if (document.getElementById('animals-view'))   initAdminAnimalsTable(_allDataCache);
-    if (document.getElementById('medical-view'))   initMedicalTable(_allDataCache);
-    if (document.getElementById('staff-view'))     initStaffTable(_allDataCache);
 });
 
 

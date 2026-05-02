@@ -1,9 +1,8 @@
 //  user.js  —  Public pages (animals list, animal detail, events)
 //  backend: ดู comment "API Endpoint:" ในแต่ละ function
-//  เพื่อรู้ว่าต้องทำ endpoint อะไรใน back
 //  เมื่อพร้อมแล้วเปลี่ยน USE_MOCK = false ใน api-config.js
 
-// Mock Data 
+// ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const MOCK_ANIMALS = [
     {
@@ -104,69 +103,49 @@ const MOCK_EVENTS = [
     }
 ];
 
-// API Functions
-// API Endpoint: GET /api/animals?category=X
+// ─── API Functions ─────────────────────────────────────────────────────────────
+
 async function getAnimals(category = null) {
-    if (USE_MOCK) {
-        const result = (!category || category === 'All')
-            ? [...MOCK_ANIMALS]
-            : MOCK_ANIMALS.filter(a => a.category === category);
-        console.log(`[MOCK] GET /api/animals${category ? '?category=' + category : ''} →`, result.length, 'animals');
-        return result;
-    }
     const query = category && category !== 'All' ? `?category=${encodeURIComponent(category)}` : '';
-    console.log(`[API] GET /api/animals${query}`);
-    const result = await apiGet('/animals' + query);
-    console.log(`[API] response →`, result);
-    return result;
+    return apiGet('/animals' + query);
 }
 
-// API Endpoint: GET /api/animals/{id}
 async function getAnimalById(id) {
-    if (USE_MOCK) {
-        const result = MOCK_ANIMALS.find(a => a.id === parseInt(id)) || null;
-        console.log(`[MOCK] GET /api/animals/${id} →`, result ? result.name : 'not found');
-        return result;
-    }
-    console.log(`[API] GET /api/animals/${id}`);
-    const result = await apiGet(`/animals/${id}`);
-    console.log(`[API] response →`, result);
-    return result;
+    return apiGet(`/animals/${id}`);
 }
 
-// API Endpoint: GET /api/animals/search?keyword=X
-async function searchAnimals(keyword) {
-    if (USE_MOCK) {
-        const kw = keyword.toLowerCase();
-        const result = MOCK_ANIMALS.filter(a =>
-            a.name.toLowerCase().includes(kw) ||
-            a.sciName.toLowerCase().includes(kw) ||
-            a.category.toLowerCase().includes(kw) ||
-            a.zone.toLowerCase().includes(kw)
-        );
-        console.log(`[MOCK] GET /api/animals/search?keyword=${keyword} →`, result.length, 'results');
-        return result;
-    }
-    console.log(`[API] GET /api/animals/search?keyword=${keyword}`);
-    const result = await apiGet(`/animals/search?keyword=${encodeURIComponent(keyword)}`);
-    console.log(`[API] response →`, result);
-    return result;
-}
-
-// API Endpoint: GET /api/events
 async function getEvents() {
-    if (USE_MOCK) {
-        console.log(`[MOCK] GET /api/events →`, MOCK_EVENTS.length, 'events');
-        return [...MOCK_EVENTS];
-    }
-    console.log(`[API] GET /api/events`);
-    const result = await apiGet('/events');
-    console.log(`[API] response →`, result);
-    return result;
+    return apiGet('/events');
 }
 
-// Render Helpers
+// ─── Render Helpers ────────────────────────────────────────────────────────────
+
+function renderHomeCard(animal) {
+    const img = (animal.image || '').split('/').pop();
+    return `
+        <div class="animal-card">
+            <div class="card-image-wrapper">
+                <img src="../images/${img}" alt="${animal.name}"
+                     onerror="this.src='../images/unicorn.png'">
+            </div>
+            <div class="card-content">
+                <h4>${animal.name}</h4>
+                <span class="category-tag">${animal.category}</span>
+                <p>${animal.description}</p>
+                <a href="animal-detail.html?id=${animal.id}" class="learn-more">
+                    View Details
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </a>
+            </div>
+        </div>`;
+}
+
 function renderAnimalCard(animal) {
+    const img = (animal.image || '').split('/').pop();
     return `
         <div class="animal-card list-card">
             <div class="card-image-wrapper">
@@ -193,14 +172,118 @@ function renderAnimalCard(animal) {
         </div>`;
 }
 
-// Page Initializers 
-// เรียกใน animals.html
+function renderRelatedCard(animal) {
+    const img = (animal.image || '').split('/').pop();
+    return `
+        <div class="animal-card list-card">
+            <div class="card-image-wrapper">
+                <img src="../images/${img}" alt="${animal.name}"
+                     onerror="this.src='../images/unicorn.png'">
+            </div>
+            <div class="card-content">
+                <h4>${animal.name}</h4>
+                <span class="category-tag">${animal.category}</span>
+                <button class="btn-full-width"
+                    onclick="window.location.href='animal-detail.html?id=${animal.id}'">
+                    View Details
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>`;
+}
+
+function renderEventCard(event) {
+    const time = (event.showTime || '').substring(0, 5);
+    return `
+        <div class="event-card">
+            <img src="../images/unicorn.png" alt="${event.showName}" onerror="this.src='../images/unicorn.png'">
+            <div class="event-info">
+                <h2>${event.showName}</h2>
+                <p class="subtitle">${event.zone || ''} Zone</p>
+                <div class="event-meta">
+                    <div class="meta-item">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        <div><strong>${event.showDate}</strong></div>
+                    </div>
+                    <div class="meta-item">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <div><strong>${time}</strong></div>
+                    </div>
+                    <div class="meta-item">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <div><strong>${event.zone || ''}</strong><br><span>Zone</span></div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="window.location.href='map.html'">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg> View on Map
+            </button>
+        </div>`;
+}
+
+// ─── Page Initializers ─────────────────────────────────────────────────────────
+
+async function initHomePage() {
+    const grid = document.getElementById('home-animals-grid');
+    if (!grid) return;
+
+    grid.innerHTML = Array(8).fill(`
+        <div class="animal-card skeleton">
+            <div class="card-image-wrapper" style="background:#e8f0e9;min-height:180px;"></div>
+            <div class="card-content" style="padding:1rem;">
+                <div style="height:1rem;background:#e8f0e9;border-radius:4px;margin-bottom:.5rem;"></div>
+                <div style="height:.75rem;background:#e8f0e9;border-radius:4px;width:60%;"></div>
+            </div>
+        </div>`).join('');
+
+    let allAnimals = await getAnimals();
+
+    function renderGrid(animals) {
+        const display = animals.slice(0, 8);
+        grid.innerHTML = display.length
+            ? display.map(renderHomeCard).join('')
+            : '<p style="padding:2rem;color:#888;grid-column:1/-1;">No animals found.</p>';
+    }
+
+    renderGrid(allAnimals);
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const cat = btn.dataset.category;
+            const filtered = cat === 'All'
+                ? allAnimals
+                : allAnimals.filter(a => a.category === cat);
+            renderGrid(filtered);
+        });
+    });
+}
+
 async function initAnimalsPage() {
     const grid = document.getElementById('animals-grid');
     const countEl = document.getElementById('results-count');
     const searchInput = document.querySelector('.search-bar input');
 
-    async function renderList(animals) {
+    function renderList(animals) {
         grid.innerHTML = animals.length
             ? animals.map(renderAnimalCard).join('')
             : '<p style="padding:2rem;color:#888;">No animals found.</p>';
@@ -210,25 +293,29 @@ async function initAnimalsPage() {
     }
 
     let allAnimals = await getAnimals();
-    // console.log("GET all animals: ", allAnimals)
-    renderList(allAnimals);
+    let currentAnimals = allAnimals;
 
-    // Quick filter pill buttons
+    renderList(currentAnimals);
+
     document.querySelectorAll('.pill-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const label = btn.textContent.trim();
-            const filtered = label === 'All' ? allAnimals : allAnimals.filter(a => a.category === label);
-            renderList(filtered);
+            currentAnimals = label === 'All'
+                ? allAnimals
+                : allAnimals.filter(a => a.category === label);
+            renderList(currentAnimals);
+            if (searchInput) searchInput.value = '';
         });
     });
 
-    // Search input
     if (searchInput) {
-        searchInput.addEventListener('input', async () => {
-            const kw = searchInput.value.trim();
-            const result = kw ? await searchAnimals(kw) : allAnimals;
+        searchInput.addEventListener('input', () => {
+            const kw = searchInput.value.trim().toLowerCase();
+            const result = kw
+                ? currentAnimals.filter(a => a.name.toLowerCase().startsWith(kw))
+                : currentAnimals;
             renderList(result);
         });
     }
@@ -236,11 +323,21 @@ async function initAnimalsPage() {
     initDropdownFilters(allAnimals)
 }
 
-// เรียกใน animal-detail.html
 async function initAnimalDetailPage() {
-    const id = new URLSearchParams(window.location.search).get('id') || 1;
-    const animal = await getAnimalById(id);
-    
+    const id = parseInt(new URLSearchParams(window.location.search).get('id')) || 1;
+
+    let animal, sameCategory, allEvents;
+    try {
+        [animal, sameCategory, allEvents] = await Promise.all([
+            getAnimalById(id),
+            getAnimals(),
+            getEvents()
+        ]);
+    } catch (e) {
+        console.error('[detail] โหลดข้อมูลล้มเหลว:', e);
+        return;
+    }
+
     if (!animal) {
         document.body.innerHTML = '<p style="padding:2rem;text-align:center;">Animal not found.</p>';
         return;
@@ -255,7 +352,6 @@ async function initAnimalDetailPage() {
         else el.textContent = value;
     };
 
-    // Breadcrumb
     set('#detail-breadcrumb', animal.name);
 
     console.log(animal.image)
@@ -276,11 +372,66 @@ async function initAnimalDetailPage() {
     set('#detail-diet-type', animal.diet);
     set('#detail-zone-info', animal.zone + ' Zone');
 
-    // Gallery (set all gallery images to this animal)
     document.querySelectorAll('.gallery-img').forEach(img => {
         img.src = `${animal.image}`;
         img.alt = animal.name;
     });
+
+    // ── Show Schedule ──
+    const scheduleCard = document.querySelector('.schedule-card');
+    if (scheduleCard && allEvents && allEvents.length > 0) {
+        const event = allEvents[0];
+        const time = (event.showTime || '').substring(0, 5);
+        scheduleCard.innerHTML = `
+            <img src="../images/unicorn.png" alt="${event.showName}" onerror="this.src='../images/unicorn.png'">
+            <div class="schedule-info">
+                <h3>${event.showName}</h3>
+                <p class="subtitle">${event.zone || ''} Zone</p>
+                <div class="schedule-meta">
+                    <div class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        <div><strong>${event.showDate}</strong></div>
+                    </div>
+                    <div class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <div><strong>${time}</strong></div>
+                    </div>
+                    <div class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <div><strong>${event.zone || ''}</strong><br><span>Zone</span></div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-primary small-btn" onclick="window.location.href='map.html'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg> View on Map
+            </button>`;
+    }
+
+    // ── Related Animals ──
+    const relatedGrid = document.querySelector('.related-animals .animals-grid');
+    if (relatedGrid) {
+        const related = sameCategory
+            .filter(a => a.category === animal.category && a.id !== id)
+            .slice(0, 4);
+
+        relatedGrid.innerHTML = related.length
+            ? related.map(renderRelatedCard).join('')
+            : '<p style="padding:1rem;color:#888;">No related animals found.</p>';
+    }
 }
 
 
@@ -409,13 +560,29 @@ function initDropdownFilters(allAnimals) {
     render();
 }
 
+async function initEventsPage() {
+    const list = document.querySelector('.events-list');
+    const countEl = document.querySelector('.events-count-header span');
+    if (!list) return;
+
+    const events = await getEvents();
+
+    if (countEl) countEl.innerHTML = `<strong>${events.length}</strong> shows scheduled`;
+
+    list.innerHTML = events.length
+        ? events.map(renderEventCard).join('')
+        : '<p style="padding:2rem;color:#888;">No events found.</p>';
+}
 
 // Auto-init: detect page and run the right function
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('animals-grid')) {
+    if (document.getElementById('home-animals-grid')) {
+        initHomePage();
+    } else if (document.getElementById('animals-grid')) {
         initAnimalsPage();
     } else if (document.getElementById('detail-name')) {
         initAnimalDetailPage();
+    } else if (document.querySelector('.events-list')) {
+        initEventsPage();
     }
-
 });

@@ -1,42 +1,37 @@
+<<<<<<<< HEAD:backend/pythons/animalShowApi.py
 from flask import Flask, jsonify, request, abort, Blueprint
+import pyodbc
 import config
+# app = Flask(__name__)
+
+========
+from flask import Flask, jsonify, request, abort
+from flask_cors import CORS
 import pyodbc
 
-# app = Flask(__name__)
-# CORS(app)
+app = Flask(__name__)
+CORS(app)
+>>>>>>>> 9f774376f0fa501bc359fa784355fe20507814cf:backend/models/userAPI/userApi.py
 MEDIA_BASE_URL = "http://127.0.0.1:5500/frontend/images/"
 animal_bp = Blueprint('animal', __name__)
 
-# def get_db_connection():
-#     try:
-#         server = 'localhost\SQLEXPRESS'
-#         # server = 'LAPTOP-TAELV2HA\\armer'
-#         database = 'ZoogleDB'
-#         conn_str = (
-#             "DRIVER={ODBC Driver 17 for SQL Server};"
-#             "SERVER=localhost;"
-#             "DATABASE=ZoogleDB;"
-#             "Trusted_Connection=yes;"
-#             "TrustServerCertificate=yes;"
-# )
-#         return pyodbc.connect(conn_str)
-#         print("✅ DB Connected successfully!")
-#     except Exception as e:
-#         print("DB Connection Error:", e)
-#         raise
-
-
 def get_db_connection():
     try:
+<<<<<<<< HEAD:backend/pythons/animalShowApi.py
         server = 'localhost\SQLEXPRESS'
+========
+        server = 'LAPTOP-TAELV2HA\\armer'
+>>>>>>>> 9f774376f0fa501bc359fa784355fe20507814cf:backend/models/userAPI/userApi.py
         database = 'ZoogleDB'
         conn_str = (
-            f"DRIVER={{SQL Server}};"
-            f"SERVER={server};"
-            f"DATABASE={database};"
+            "DRIVER={ODBC Driver 17 for SQL Server};"
+            "SERVER=localhost;"
+            "DATABASE=ZoogleDB;"
             "Trusted_Connection=yes;"
-        )
+            "TrustServerCertificate=yes;"
+)
         return pyodbc.connect(conn_str)
+        print("✅ DB Connected successfully!")
     except Exception as e:
         print("DB Connection Error:", e)
         raise
@@ -49,9 +44,15 @@ def _format_animal_row(row):
         "sciName": row.SciName,
         "category": row.Category,
         "zone": row.Zone,
+<<<<<<<< HEAD:backend/pythons/animalShowApi.py
         "image": config.BACKEND_URL + str(row.MainImage),
+        # (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None,
+        "dangerLevel": row.DangerousLevel,
+========
+        "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None,
         "dangerLevel": row.DangerousLevel,
         "description": row.Description
+>>>>>>>> 9f774376f0fa501bc359fa784355fe20507814cf:backend/models/userAPI/userApi.py
     }
 
 
