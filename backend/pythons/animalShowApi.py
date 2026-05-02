@@ -120,7 +120,7 @@ def search_animals():
 
 @animal_bp.route('/events', methods=['GET'])
 def get_events():
-    """GET /events — เรียกจาก user.js getEvents()"""
+    """GET /api/events — เรียกจาก user.js getEvents()"""
     conn = None
     try:
         conn = get_db_connection()
@@ -145,7 +145,7 @@ def get_events():
         return jsonify(events)
 
     except Exception as e:
-        print("Error /events:", e)
+        print("Error /api/events:", e)
         return jsonify({"error": "Internal Server Error"}), 500
 
     finally:

@@ -209,13 +209,14 @@ function renderRelatedCard(animal) {
 }
 
 function renderEventCard(event) {
+    console.log(event)
     const time = (event.showTime || '').substring(0, 5);
     return `
         <div class="event-card">
             <img src="../images/unicorn.png" alt="${event.showName}" onerror="this.src='../images/unicorn.png'">
             <div class="event-info">
                 <h2>${event.showName}</h2>
-                <p class="subtitle">${event.zone || ''} Zone</p>
+                <p class="subtitle">${event.zone.name || ''} Zone</p>
                 <div class="event-meta">
                     <div class="meta-item">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -238,7 +239,7 @@ function renderEventCard(event) {
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                             <circle cx="12" cy="10" r="3"/>
                         </svg>
-                        <div><strong>${event.zone || ''}</strong><br><span>Zone</span></div>
+                        <div><strong>${event.zone.name || ''}</strong><br></div>
                     </div>
                 </div>
             </div>

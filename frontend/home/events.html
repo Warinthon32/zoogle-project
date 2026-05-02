@@ -32,7 +32,7 @@
     </header>
 
     <div class="page-header">
-        <div class="breadcrumb"><a href="index.html">Zoogle</a> / Show Schedule</div>
+        <div class="breadcrumb">Zoogle / Show Schedule</div>
         <h1>Show Schedule</h1>
         <p>Plan your day with our exciting animal shows and feeding demonstrations</p>
     </div>
@@ -42,6 +42,14 @@
         <section class="events-filter-section">
             <div class="date-toggles">
                 <button class="toggle-btn active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg> All
+                </button>
+                <button class="toggle-btn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                         <line x1="16" y1="2" x2="16" y2="6" />
@@ -59,14 +67,14 @@
                 </button>
             </div>
             <div class="dropdowns">
-                <div class="dropdown-wrapper">
-                    <select>
-                        <option>All Animal Types</option>
+                <!-- <div class="dropdown-wrapper">
+                    <select id="filter-type">
+                        <option value="">All Animal Types</option>
                     </select>
-                </div>
+                </div> -->
                 <div class="dropdown-wrapper">
-                    <select>
-                        <option>All Zones</option>
+                    <select id="filter-zone">
+                        <option value="">All Zones</option>
                     </select>
                 </div>
             </div>
@@ -130,6 +138,7 @@
 
     <script src="../js/api-config.js"></script>
     <script src="../js/user.js"></script>
+    <script src="../js/event.js"></script>
 </body>
 
 </html>
