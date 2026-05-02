@@ -3,6 +3,7 @@ from flask_cors import CORS
 import config
 import pyodbc
 user_bp = Blueprint('user', __name__)
+from db import get_db_connection
 
 
 MEDIA_BASE_URL = "http://127.0.0.1:5500/frontend/images/"

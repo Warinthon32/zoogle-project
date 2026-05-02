@@ -8,3 +8,13 @@ MEDIA_BASE_URL = "http://127.0.0.1:5500/frontend/images/"
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads/animals")
 UPLOAD_API = "/api/uploads/animals"
 UPLOAD_PUBLIC_URL = BACKEND_URL + UPLOAD_API
+
+
+
+DATABASE_NAME = "ZoogleDB"
+
+DATABASE_SERVER = "localhost\SQLEXPRESS"
+DATABASE_DRIVER = "SQL Server"
+
+# DATABASE_SERVER = "LAPTOP-TAELV2HA\\armer"
+# DATABASE_DRIVER = "ODBC Driver 17 for SQL Server"

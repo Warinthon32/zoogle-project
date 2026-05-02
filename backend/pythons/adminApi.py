@@ -3,24 +3,13 @@ import pyodbc
 from datetime import datetime
 import config
 
+from db import get_db_connection
+
 from pythons.uploadFile import save_upload, delete_animal_files
 
 admin_bp = Blueprint('admin', __name__)
 
-def get_db_connection():
-    try:
-        server = 'localhost\SQLEXPRESS'
-        database = 'ZoogleDB'
-        conn_str = (
-            f"DRIVER={{SQL Server}};"
-            f"SERVER={server};"
-            f"DATABASE={database};"
-            "Trusted_Connection=yes;"
-        )
-        return pyodbc.connect(conn_str)
-    except Exception as e:
-        print("DB Connection Error:", e)
-        raise
+
 
 
 

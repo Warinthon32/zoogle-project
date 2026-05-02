@@ -12,20 +12,8 @@ animal_names = [
 
 USE_MOCK_DATA = True
 
-def get_db_connection():
-    try:
-        server = 'localhost\SQLEXPRESS'
-        database = 'ZoogleDB'
-        conn_str = (
-            f"DRIVER={{SQL Server}};"
-            f"SERVER={server};"
-            f"DATABASE={database};"
-            "Trusted_Connection=yes;"
-        )
-        return pyodbc.connect(conn_str)
-    except Exception as e:
-        print("DB Connection Error:", e)
-        raise
+from db import get_db_connection
+
 
 def initUseMockData():
     if not USE_MOCK_DATA:
