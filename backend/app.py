@@ -6,6 +6,7 @@ import os
 from pythons.useMockData import initUseMockData
 
 from pythons.adminApi import admin_bp
+from pythons.userApi import user_bp
 from pythons.animalShowApi import animal_bp
 from pythons.auth import auth_bp
 
@@ -24,7 +25,7 @@ CORS(app,
 app.register_blueprint(admin_bp, url_prefix='/api')
 app.register_blueprint(animal_bp, url_prefix='/api')
 app.register_blueprint(auth_bp, url_prefix='/api')
-
+app.register_blueprint(user_bp, url_prefix='/api')
 @app.route("/health")
 def health_check():
     return jsonify({"status": "ok"}), 200

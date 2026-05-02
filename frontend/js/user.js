@@ -10,77 +10,88 @@ const MOCK_ANIMALS = [
         category: 'Mammals', zone: 'Savanna', dangerLevel: 4,
         diet: 'Carnivore', quantity: 6, image: 'lion.png',
         description: 'Majestic predator known as the king of the jungle with powerful roars and social pride behavior.',
-        longDescription: 'The African lion is a large carnivorous mammal native to sub-Saharan Africa. Adult males are easily recognized by their thick manes. Lions are unique among big cats because they live in social groups known as prides, usually consisting of related females, their cubs, and a few dominant males.'
+        foodInfo: 'Fed with fresh meat such as beef or chicken, provided in controlled portions.',
+        zoneName: 'Savanna', zoneTheme: 'African Plains', zoneWeather: 'Hot & Dry'
     },
     {
         id: 2, name: 'Emperor Penguin', sciName: 'Aptenodytes forsteri',
         category: 'Birds', zone: 'Polar', dangerLevel: 1,
         diet: 'Carnivore', quantity: 12, image: 'penguin.png',
         description: 'A flightless bird adapted to icy climates, admired for its elegant posture and strong survival instincts.',
-        longDescription: 'Emperor penguins are the largest of all penguin species, found only in Antarctica. They huddle together for warmth and are known for their remarkable breeding behavior in extreme cold, with males incubating eggs through the Antarctic winter.'
+        foodInfo: 'Fish and squid provided daily.',
+        zoneName: 'Polar', zoneTheme: 'Antarctic', zoneWeather: 'Cold'
     },
     {
         id: 3, name: 'Red Panda', sciName: 'Ailurus fulgens',
         category: 'Mammals', zone: 'Forest', dangerLevel: 1,
         diet: 'Herbivore', quantity: 4, image: 'red_panda.png',
         description: 'A shy tree-dwelling animal with reddish fur, a striped tail, and a playful yet gentle nature.',
-        longDescription: 'Red pandas are small mammals native to the eastern Himalayas and southwestern China. Despite the name, they are not closely related to giant pandas. They are excellent climbers and spend most of their time in trees, feeding primarily on bamboo.'
+        foodInfo: 'Bamboo shoots and fruit.',
+        zoneName: 'Forest', zoneTheme: 'Himalayan Forest', zoneWeather: 'Cool & Humid'
     },
     {
         id: 4, name: 'Scarlet Macaw', sciName: 'Ara macao',
         category: 'Birds', zone: 'Rainforest', dangerLevel: 1,
         diet: 'Herbivore', quantity: 8, image: 'macaw.png',
         description: 'A colorful tropical parrot known for its intelligence, vibrant feathers, and loud distinctive calls.',
-        longDescription: 'Scarlet macaws are large, brightly colored parrots native to humid evergreen forests of tropical America. They are highly intelligent and can mimic human speech. Their vibrant red, yellow, and blue plumage makes them one of the most recognizable birds in the world.'
+        foodInfo: 'Seeds, nuts, and tropical fruits.',
+        zoneName: 'Rainforest', zoneTheme: 'Tropical Rainforest', zoneWeather: 'Warm & Humid'
     },
     {
         id: 5, name: 'Green Sea Turtle', sciName: 'Chelonia mydas',
         category: 'Aquatic', zone: 'Ocean', dangerLevel: 1,
         diet: 'Herbivore', quantity: 3, image: 'turtle.png',
         description: 'A graceful marine reptile that spends most of its life in the sea and helps maintain ocean ecosystems.',
-        longDescription: 'Green sea turtles are large, air-breathing reptiles that inhabit tropical and subtropical seas. They are the only sea turtle that is a strict herbivore as an adult, feeding primarily on seagrasses and algae, which helps maintain healthy sea floor ecosystems.'
+        foodInfo: 'Seagrass and algae.',
+        zoneName: 'Ocean', zoneTheme: 'Marine World', zoneWeather: 'Tropical'
     },
     {
         id: 6, name: 'Komodo Dragon', sciName: 'Varanus komodoensis',
         category: 'Reptiles', zone: 'Island', dangerLevel: 3,
         diet: 'Carnivore', quantity: 2, image: 'komodo.png',
         description: 'A giant lizard with powerful claws and a strong hunting instinct, native to dry tropical islands.',
-        longDescription: 'The Komodo dragon is the largest living species of lizard, found on the Indonesian islands of Komodo, Rinca, and Flores. They are apex predators with powerful venom that prevents blood clotting in their prey. They can detect carrion from up to 9.5 km away.'
+        foodInfo: 'Whole prey animals provided weekly.',
+        zoneName: 'Island', zoneTheme: 'Indonesian Island', zoneWeather: 'Hot & Dry'
     },
     {
         id: 7, name: 'Snow Leopard', sciName: 'Panthera uncia',
         category: 'Mammals', zone: 'Mountain', dangerLevel: 3,
         diet: 'Carnivore', quantity: 3, image: 'snow_leopard.png',
         description: 'A rare and elusive big cat with thick fur, powerful limbs, and excellent climbing ability.',
-        longDescription: 'Snow leopards are large wild cats native to the mountain ranges of Central and South Asia. Their thick smoky-gray coats with dark rosettes provide camouflage against rocky terrain. They use their long tails for balance and as a wrap against the cold.'
+        foodInfo: 'Fresh meat provided daily.',
+        zoneName: 'Mountain', zoneTheme: 'Central Asian Mountains', zoneWeather: 'Cold'
     },
     {
         id: 8, name: 'Flamingo', sciName: 'Phoenicopterus roseus',
         category: 'Birds', zone: 'Wetland', dangerLevel: 1,
         diet: 'Omnivore', quantity: 30, image: 'flamingo.png',
         description: 'A striking bird recognized for its pink feathers, long legs, and elegant standing posture.',
-        longDescription: 'Flamingos are wading birds known for their pink plumage, stilt-like legs, and distinctive downward-bent bills. Their pink color comes from carotenoid pigments in the algae and crustaceans they eat. They live in large colonies in shallow lakes and lagoons.'
+        foodInfo: 'Algae, shrimp, and small crustaceans.',
+        zoneName: 'Wetland', zoneTheme: 'Lagoon & Wetlands', zoneWeather: 'Warm'
     },
     {
         id: 9, name: 'Crocodile', sciName: 'Crocodylus niloticus',
         category: 'Reptiles', zone: 'River', dangerLevel: 4,
         diet: 'Carnivore', quantity: 5, image: 'crocodile.png',
         description: 'An ancient reptile with strong jaws and excellent camouflage, often found in rivers and swamps.',
-        longDescription: 'Nile crocodiles are the largest freshwater predators in Africa. They are powerful ambush hunters and can stay submerged for up to two hours. Despite their fearsome reputation, they are attentive parents who carefully guard their nests and carry hatchlings to water.'
+        foodInfo: 'Large fish and whole prey.',
+        zoneName: 'River', zoneTheme: 'African River', zoneWeather: 'Hot & Humid'
     },
     {
         id: 10, name: 'Dolphin', sciName: 'Tursiops truncatus',
         category: 'Aquatic', zone: 'Marine', dangerLevel: 1,
         diet: 'Carnivore', quantity: 10, image: 'dolphin.png',
         description: 'An intelligent and social sea animal known for its agility, playful behavior, and communication skills.',
-        longDescription: 'Bottlenose dolphins are highly intelligent marine mammals known for their complex social structures and sophisticated communication. They use echolocation to navigate and hunt, and have been observed displaying empathy, problem-solving, and even tool use.'
+        foodInfo: 'Fresh fish provided multiple times daily.',
+        zoneName: 'Marine', zoneTheme: 'Open Ocean', zoneWeather: 'Tropical'
     },
     {
         id: 11, name: 'Unicorn', sciName: 'Equus monoceros',
         category: 'Fantasy Animals', zone: 'Mythical', dangerLevel: 1,
         diet: 'Herbivore', quantity: 1, image: 'unicorn.png',
         description: 'A legendary horned creature symbolizing purity, grace, and magical beauty within enchanted lands.',
-        longDescription: 'The unicorn is a legendary creature described since antiquity as a beast with a single large, spiraling horn projecting from its forehead. It symbolizes purity, grace, and untameable freedom. In medieval lore, only a maiden of pure heart could approach one.'
+        foodInfo: 'Enchanted grass and moonflowers.',
+        zoneName: 'Mythical', zoneTheme: 'Enchanted Forest', zoneWeather: 'Magical'
     }
 ];
 
@@ -125,7 +136,7 @@ function renderHomeCard(animal) {
     return `
         <div class="animal-card">
             <div class="card-image-wrapper">
-                <img src="../images/${img}" alt="${animal.name}"
+                <img src="${img}" alt="${animal.name}"
                      onerror="this.src='../images/unicorn.png'">
             </div>
             <div class="card-content">
@@ -149,7 +160,7 @@ function renderAnimalCard(animal) {
     return `
         <div class="animal-card list-card">
             <div class="card-image-wrapper">
-                <img src="${animal.image}" alt="${animal.name}"
+                <img src="${img}" alt="${animal.name}"
                      onerror="this.src='../images/unicorn.png'">
             </div>
             <div class="card-content">
@@ -158,7 +169,7 @@ function renderAnimalCard(animal) {
                     <span class="tag green">${animal.category}</span>
                     <span class="tag brown">${animal.zone}</span>
                 </div>
-                <p>${animal.description || ""}</p>
+                <p>${animal.description}</p>
                 <button class="btn-full-width"
                     onclick="window.location.href='animal-detail.html?id=${animal.id}'">
                     View Details
@@ -174,10 +185,11 @@ function renderAnimalCard(animal) {
 
 function renderRelatedCard(animal) {
     const img = (animal.image || '').split('/').pop();
+    console.log('Rendering related card for:', animal.name, 'with image:', img);
     return `
         <div class="animal-card list-card">
             <div class="card-image-wrapper">
-                <img src="../images/${img}" alt="${animal.name}"
+                <img src="${img}" alt="${animal.name}"
                      onerror="this.src='../images/unicorn.png'">
             </div>
             <div class="card-content">
@@ -319,8 +331,6 @@ async function initAnimalsPage() {
             renderList(result);
         });
     }
-
-    initDropdownFilters(allAnimals)
 }
 
 async function initAnimalDetailPage() {
@@ -353,27 +363,22 @@ async function initAnimalDetailPage() {
     };
 
     set('#detail-breadcrumb', animal.name);
-
-    console.log(animal.image)
-
-    // Hero
-    set('#detail-hero-img', `${animal.image}`, 'src');
+    set('#detail-hero-img', `../images/${(animal.image || '').split('/').pop()}`, 'src');
     set('#detail-hero-img', animal.name, 'alt');
     set('#detail-name', animal.name);
     set('#detail-sci-name', animal.sciName);
-    set('#detail-hero-desc', animal.description);
+    set('#detail-hero-desc', '');
     set('#detail-category-tag', animal.category);
     set('#detail-zone-tag', animal.zone + ' Zone');
-    
-
-
-    // Info cards
-    set('#detail-long-desc', animal.longDescription);
+    set('#detail-long-desc', animal.description);
     set('#detail-diet-type', animal.diet);
-    set('#detail-zone-info', animal.zone + ' Zone');
+    set('#detail-food-info', animal.foodInfo);
+    set('#detail-zone-name', animal.zoneName);
+    set('#detail-zone-theme', animal.zoneTheme);
+    set('#detail-zone-weather', animal.zoneWeather);
 
     document.querySelectorAll('.gallery-img').forEach(img => {
-        img.src = `${animal.image}`;
+        img.src = `../images/${(animal.image || '').split('/').pop()}`;
         img.alt = animal.name;
     });
 
@@ -434,132 +439,6 @@ async function initAnimalDetailPage() {
     }
 }
 
-
-
-
-
-function populateDropdowns(animals) {
-    const categorySelect = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(1) select');
-    const zoneSelect     = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(2) select');
-    const sortSelect     = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(4) select');
-
-    if (!categorySelect || !zoneSelect || !sortSelect) return;
-
-    const categories = ['All', ...new Set(animals.map(a => a.category).filter(Boolean))].sort();
-    const zones      = ['All', ...new Set(animals.map(a => a.zone).filter(Boolean))].sort();
-
-    categorySelect.innerHTML = categories.map(c =>
-        `<option value="${c}">${c === 'All' ? 'All Categories' : c}</option>`
-    ).join('');
-
-    zoneSelect.innerHTML = zones.map(z =>
-        `<option value="${z}">${z === 'All' ? 'All Zones' : z}</option>`
-    ).join('');
-
-    sortSelect.innerHTML = `
-        <option value="name-az">Name (A–Z)</option>
-        <option value="name-za">Name (Z–A)</option>
-        <option value="danger-high">Danger (High–Low)</option>
-        <option value="danger-low">Danger (Low–High)</option>
-    `;
-}
-
-function applyFilters(animals, { category = 'All', zone = 'All', keyword = '', sort = 'name-az' } = {}) {
-    let result = [...animals];
-
-    if (category !== 'All') result = result.filter(a => a.category === category);
-    if (zone !== 'All')     result = result.filter(a => a.zone === zone);
-
-    if (keyword) {
-        const kw = keyword.toLowerCase();
-        result = result.filter(a =>
-            a.name.toLowerCase().includes(kw)           ||
-            (a.sciName  || '').toLowerCase().includes(kw) ||
-            (a.category || '').toLowerCase().includes(kw) ||
-            (a.zone     || '').toLowerCase().includes(kw)
-        );
-    }
-
-    result.sort((a, b) => {
-        if (sort === 'name-az')     return a.name.localeCompare(b.name);
-        if (sort === 'name-za')     return b.name.localeCompare(a.name);
-        if (sort === 'danger-high') return b.dangerLevel - a.dangerLevel;
-        if (sort === 'danger-low')  return a.dangerLevel - b.dangerLevel;
-        return 0;
-    });
-
-    return result;
-}
-
-function initDropdownFilters(allAnimals) {
-    const grid           = document.getElementById('animals-grid');
-    const countEl        = document.getElementById('results-count');
-    const searchInput    = document.querySelector('.search-bar input');
-    const categorySelect = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(1) select');
-    const zoneSelect     = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(2) select');
-    const sortSelect     = document.querySelector('.filter-dropdowns .dropdown-group:nth-child(4) select');
-
-
-    const state = { category: 'All', zone: 'All', keyword: '', sort: 'name-az' };
-
-
-    function render() {
-        const result = applyFilters(allAnimals, state);
-        grid.innerHTML = result.length
-            ? result.map(renderAnimalCard).join('')
-            : '<p style="padding:2rem;color:#888;">No animals found.</p>';
-        if (countEl) {
-            countEl.textContent = `${result.length} animal${result.length !== 1 ? 's' : ''} found`;
-        }
-    }
-
-
-    populateDropdowns(allAnimals);
-
-    categorySelect?.addEventListener('change', () => {
-        state.category = categorySelect.value;
-   
-        document.querySelectorAll('.pill-btn').forEach(b => {
-            b.classList.toggle('active', b.textContent.trim() === state.category);
-        });
-        render();
-    });
-
-    zoneSelect?.addEventListener('change', () => {
-        state.zone = zoneSelect.value;
-        render();
-    });
-
-    sortSelect?.addEventListener('change', () => {
-        state.sort = sortSelect.value;
-        render();
-    });
-
-
-    if (searchInput) {
-        const newInput = searchInput.cloneNode(true);
-        searchInput.replaceWith(newInput);
-        newInput.addEventListener('input', () => {
-            state.keyword = newInput.value.trim();
-            render();
-        });
-    }
-
-    document.querySelectorAll('.pill-btn').forEach(btn => {
-        const newBtn = btn.cloneNode(true);
-        btn.replaceWith(newBtn);
-        newBtn.addEventListener('click', () => {
-            document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-            newBtn.classList.add('active');
-            state.category = newBtn.textContent.trim();
-            if (categorySelect) categorySelect.value = state.category;
-            render();
-        });
-    });
-
-    render();
-}
-
 async function initEventsPage() {
     const list = document.querySelector('.events-list');
     const countEl = document.querySelector('.events-count-header span');
@@ -574,7 +453,8 @@ async function initEventsPage() {
         : '<p style="padding:2rem;color:#888;">No events found.</p>';
 }
 
-// Auto-init: detect page and run the right function
+// ─── Auto-init ─────────────────────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('home-animals-grid')) {
         initHomePage();
