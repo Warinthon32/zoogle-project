@@ -8,18 +8,16 @@ MEDIA_BASE_URL = "http://127.0.0.1:5500/frontend/images/"
 
 def get_db_connection():
     try:
-        server = 'LAPTOP-36BAGJ2R\\pain'
+        server = 'Nadhsikarn\\Nadhsikarn'
         database = 'ZoogleDB'
         conn_str = (
             "DRIVER={ODBC Driver 17 for SQL Server};"
-            "SERVER=localhost;"
+            "SERVER=Nadhsikarn;"
             "DATABASE=ZoogleDB;"
             "Trusted_Connection=yes;"
             "TrustServerCertificate=yes;"
         )
-        
         return pyodbc.connect(conn_str)
-        print("✅ DB Connected successfully!")
     except Exception as e:
         print("DB Connection Error:", e)
         raise
@@ -39,9 +37,8 @@ def _format_animal_row(row):
         "foodInfo": row.FoodInfo,
         "zoneName": row.Zone,
         "zoneTheme": row.Theme,
-        "zoneWeather": row.Weather
-        "description": row.Description,
-        "cageId": row.CAID  
+        "zoneWeather": row.Weather,
+        "cageId": row.CAID,   # ✅ เพิ่ม cageId
     }
 
 
@@ -58,11 +55,11 @@ def get_all_animals():
     SELECT
         v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel,
         a.Description,
+        a.CAID,
         d.DietType,
         d.Description AS FoodInfo,
         z.Theme,
         z.Weather,
-        a.CAID,
         (
             SELECT TOP 1 m.MediaURL
             FROM MediaURL m
@@ -118,7 +115,6 @@ def search_animals():
                 "zone": row.ZoneName,
                 "description": row.Description,
                 "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None
-            })
             })
 
         return jsonify(animals)
@@ -211,14 +207,14 @@ def get_animal_detail(id):
             "category": row.CategoryName,
             "zone": row.ZoneName,
             "dangerLevel": row.DangerousLevel,
-            "cageId": row.CAID,  
             "image": images[0] if images else None,
             "images": images,
             "diet": row.DietType,
             "foodInfo": row.FoodInfo,
             "zoneName": row.ZoneName,
             "zoneTheme": row.Theme,
-            "zoneWeather": row.Weather
+            "zoneWeather": row.Weather,
+            "cageId": row.CAID,   # ✅ เพิ่ม cageId
         }
 
         return jsonify(animal_detail)
