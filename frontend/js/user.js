@@ -108,71 +108,75 @@ const MOCK_EVENTS = [
 // API Endpoint: GET /api/animals?category=X
 async function getAnimals(category = null) {
     if (USE_MOCK) {
-        const result = (!category || category === 'All')
-            ? [...MOCK_ANIMALS]
-            : MOCK_ANIMALS.filter(a => a.category === category);
-        console.log(`[MOCK] GET /api/animals${category ? '?category=' + category : ''} →`, result.length, 'animals');
-        return result;
+        if (!category || category === 'All') return [...MOCK_ANIMALS];
+        return MOCK_ANIMALS.filter(a => a.category === category);
     }
     const query = category && category !== 'All' ? `?category=${encodeURIComponent(category)}` : '';
-    console.log(`[API] GET /api/animals${query}`);
-    const result = await apiGet('/animals' + query);
-    console.log(`[API] response →`, result);
-    return result;
+    return apiGet('/animals' + query);
 }
 
 // API Endpoint: GET /api/animals/{id}
 async function getAnimalById(id) {
     if (USE_MOCK) {
-        const result = MOCK_ANIMALS.find(a => a.id === parseInt(id)) || null;
-        console.log(`[MOCK] GET /api/animals/${id} →`, result ? result.name : 'not found');
-        return result;
+        return MOCK_ANIMALS.find(a => a.id === parseInt(id)) || null;
     }
-    console.log(`[API] GET /api/animals/${id}`);
-    const result = await apiGet(`/animals/${id}`);
-    console.log(`[API] response →`, result);
-    return result;
+    return apiGet(`/animals/${id}`);
 }
 
 // API Endpoint: GET /api/animals/search?keyword=X
 async function searchAnimals(keyword) {
     if (USE_MOCK) {
         const kw = keyword.toLowerCase();
-        const result = MOCK_ANIMALS.filter(a =>
+        return MOCK_ANIMALS.filter(a =>
             a.name.toLowerCase().includes(kw) ||
             a.sciName.toLowerCase().includes(kw) ||
             a.category.toLowerCase().includes(kw) ||
             a.zone.toLowerCase().includes(kw)
         );
-        console.log(`[MOCK] GET /api/animals/search?keyword=${keyword} →`, result.length, 'results');
-        return result;
     }
-    console.log(`[API] GET /api/animals/search?keyword=${keyword}`);
-    const result = await apiGet(`/animals/search?keyword=${encodeURIComponent(keyword)}`);
-    console.log(`[API] response →`, result);
-    return result;
+    return apiGet(`/animals/search?keyword=${encodeURIComponent(keyword)}`);
 }
 
 // API Endpoint: GET /api/events
 async function getEvents() {
-    if (USE_MOCK) {
-        console.log(`[MOCK] GET /api/events →`, MOCK_EVENTS.length, 'events');
-        return [...MOCK_EVENTS];
-    }
-    console.log(`[API] GET /api/events`);
-    const result = await apiGet('/events');
-    console.log(`[API] response →`, result);
-    return result;
+    if (USE_MOCK) return [...MOCK_EVENTS];
+    return apiGet('/events');
 }
 
 // ─── Render Helpers ────────────────────────────────────────────────────────────
 
+// สำหรับหน้า Home (index.html) — path รูปไม่มี ../
+function renderHomeCard(animal) {
+    const img = (animal.image || '').split('/').pop();
+    return `
+        <div class="animal-card">
+            <div class="card-image-wrapper">
+                <img src="../images/${img}" alt="${animal.name}"
+                     onerror="this.src='../images/unicorn.png'">
+            </div>
+            <div class="card-content">
+                <h4>${animal.name}</h4>
+                <span class="category-tag">${animal.category}</span>
+                <p>${animal.description}</p>
+                <a href="animal-detail.html?id=${animal.id}" class="learn-more">
+                    View Details
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </a>
+            </div>
+        </div>`;
+}
+
+// สำหรับหน้า Animals list (animals.html) — path รูปใช้ ../
 function renderAnimalCard(animal) {
     const img = (animal.image || '').split('/').pop();
     return `
         <div class="animal-card list-card">
             <div class="card-image-wrapper">
-                <img src="../images/${animal.image}" alt="${animal.name}"
+                <img src="../images/${img}" alt="${animal.name}"
                      onerror="this.src='../images/unicorn.png'">
             </div>
             <div class="card-content">
@@ -221,6 +225,46 @@ function renderRelatedCard(animal) {
 
 // ─── Page Initializers ─────────────────────────────────────────────────────────
 
+// เรียกใน index.html (homepage)
+async function initHomePage() {
+    const grid = document.getElementById('home-animals-grid');
+    if (!grid) return;
+
+    // แสดง skeleton ระหว่างโหลด
+    grid.innerHTML = Array(8).fill(`
+        <div class="animal-card skeleton">
+            <div class="card-image-wrapper" style="background:#e8f0e9;min-height:180px;"></div>
+            <div class="card-content" style="padding:1rem;">
+                <div style="height:1rem;background:#e8f0e9;border-radius:4px;margin-bottom:.5rem;"></div>
+                <div style="height:.75rem;background:#e8f0e9;border-radius:4px;width:60%;"></div>
+            </div>
+        </div>`).join('');
+
+    let allAnimals = await getAnimals();
+
+    function renderGrid(animals) {
+        const display = animals.slice(0, 8); // โชว์แค่ 8 ตัวในหน้าหลัก
+        grid.innerHTML = display.length
+            ? display.map(renderHomeCard).join('')
+            : '<p style="padding:2rem;color:#888;grid-column:1/-1;">No animals found.</p>';
+    }
+
+    renderGrid(allAnimals);
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const cat = btn.dataset.category;
+            const filtered = cat === 'All'
+                ? allAnimals
+                : allAnimals.filter(a => a.category === cat);
+            renderGrid(filtered);
+        });
+    });
+}
+
 // เรียกใน animals.html
 async function initAnimalsPage() {
     const grid = document.getElementById('animals-grid');
@@ -262,12 +306,11 @@ async function initAnimalsPage() {
 async function initAnimalDetailPage() {
     const id = parseInt(new URLSearchParams(window.location.search).get('id')) || 1;
 
-    // ดึงข้อมูลสัตว์ปัจจุบัน + สัตว์ในหมวดเดียวกัน พร้อมกันใน Promise.all ครั้งเดียว
     let animal, sameCategory;
     try {
         [animal, sameCategory] = await Promise.all([
             getAnimalById(id),
-            getAnimals() // ดึงทั้งหมดก่อน แล้ว filter ข้างล่าง (1 call เท่านั้น)
+            getAnimals()
         ]);
     } catch (e) {
         console.error('[detail] โหลดข้อมูลล้มเหลว:', e);
@@ -279,8 +322,6 @@ async function initAnimalDetailPage() {
         return;
     }
 
-    // ── Populate detail fields ──────────────────────────────────────────────
-
     document.title = `${animal.name} - Zoogle`;
 
     const set = (selector, value, attr = null) => {
@@ -291,9 +332,7 @@ async function initAnimalDetailPage() {
     };
 
     set('#detail-breadcrumb', animal.name);
-
-    // Hero
-    set('#detail-hero-img', `../images/${animal.image}`, 'src');
+    set('#detail-hero-img', `../images/${(animal.image || '').split('/').pop()}`, 'src');
     set('#detail-hero-img', animal.name, 'alt');
     set('#detail-name', animal.name);
     set('#detail-sci-name', animal.sciName);
@@ -305,11 +344,9 @@ async function initAnimalDetailPage() {
     set('#detail-zone-info', animal.zone + ' Zone');
 
     document.querySelectorAll('.gallery-img').forEach(img => {
-        img.src = `../images/${animal.image}`;
+        img.src = `../images/${(animal.image || '').split('/').pop()}`;
         img.alt = animal.name;
     });
-
-    // ── Related Animals (same category, exclude self, max 4) ───────────────
 
     const relatedGrid = document.querySelector('.related-animals .animals-grid');
     if (relatedGrid) {
@@ -326,7 +363,9 @@ async function initAnimalDetailPage() {
 // ─── Auto-init ─────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('animals-grid')) {
+    if (document.getElementById('home-animals-grid')) {
+        initHomePage();
+    } else if (document.getElementById('animals-grid')) {
         initAnimalsPage();
     } else if (document.getElementById('detail-name')) {
         initAnimalDetailPage();

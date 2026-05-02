@@ -32,7 +32,8 @@ def _format_animal_row(row):
         "category": row.Category,
         "zone": row.Zone,
         "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None,
-        "dangerLevel": row.DangerousLevel
+        "dangerLevel": row.DangerousLevel,
+        "description": row.Description
     }
 
 
@@ -46,16 +47,18 @@ def get_all_animals():
         category = request.args.get('category')
 
         query = """
-            SELECT
-                v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel,
-                (
-                    SELECT TOP 1 m.MediaURL
-                    FROM MediaURL m
-                    JOIN Has_Media hm ON m.MID = hm.MID
-                    WHERE hm.AID = v.AID
-                ) AS MainImage
-            FROM vw_animal_full_info v
-        """
+    SELECT
+        v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel,
+        a.Description,
+        (
+            SELECT TOP 1 m.MediaURL
+            FROM MediaURL m
+            JOIN Has_Media hm ON m.MID = hm.MID
+            WHERE hm.AID = v.AID
+        ) AS MainImage
+    FROM vw_animal_full_info v
+    JOIN Animal a ON v.AID = a.AID
+"""
 
         if category:
             query += " WHERE v.Category = ?"
