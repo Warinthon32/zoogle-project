@@ -48,7 +48,7 @@ def initUseMockData():
         # generate filename
         filename = name.replace("-", "_").replace(" ", "_").lower() + ".png"
         public_url = f"{config.UPLOAD_API}/mock_images/{filename}"
-        print(public_url)
+        # print(public_url)
         # CHECK MEDIAURL EXISTS 
         cursor.execute("""
             SELECT MID FROM MediaURL WHERE CAST(MediaURL AS NVARCHAR(MAX)) = ?

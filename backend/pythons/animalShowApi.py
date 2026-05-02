@@ -4,7 +4,6 @@ import pyodbc
 
 # app = Flask(__name__)
 # CORS(app)
-MEDIA_BASE_URL = "http://127.0.0.1:5500/frontend/images/"
 animal_bp = Blueprint('animal', __name__)
 
 # def get_db_connection():
@@ -49,9 +48,15 @@ def _format_animal_row(row):
         "sciName": row.SciName,
         "category": row.Category,
         "zone": row.Zone,
-        "image": config.BACKEND_URL + str(row.MainImage),
+        "image": ( config.BACKEND_URL + str(row.MainImage)) if row.MainImage else None,
         "dangerLevel": row.DangerousLevel,
-        "description": row.Description
+        "description": row.Description,
+        "diet": row.DietType,
+        "foodInfo": row.FoodInfo,
+        "zoneName": row.Zone,
+        "zoneTheme": row.Theme,
+        "zoneWeather": row.Weather,
+        "cageId": row.CAID,   # ✅ เพิ่ม cageId
     }
 
 
@@ -68,6 +73,11 @@ def get_all_animals():
     SELECT
         v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel,
         a.Description,
+        a.CAID,
+        d.DietType,
+        d.Description AS FoodInfo,
+        z.Theme,
+        z.Weather,
         (
             SELECT TOP 1 m.MediaURL
             FROM MediaURL m
@@ -76,6 +86,10 @@ def get_all_animals():
         ) AS MainImage
     FROM vw_animal_full_info v
     JOIN Animal a ON v.AID = a.AID
+    LEFT JOIN Consumes con ON a.AID = con.AID
+    LEFT JOIN Diet d ON con.DID = d.DID
+    LEFT JOIN Cage ca ON a.CAID = ca.CAID
+    LEFT JOIN Zone z ON ca.ZID = z.ZID
 """
 
         if category:
@@ -84,18 +98,20 @@ def get_all_animals():
         else:
             cursor.execute(query)
 
+        rows = cursor.fetchall()
 
-        animals = [_format_animal_row(row) for row in cursor.fetchall()]
+        animals = [_format_animal_row(row) for row in rows]
 
         return jsonify(animals)
 
     except Exception as e:
-        print("Error /animals:", e)
+        print("Error /api/animals:", e)
         return jsonify({"error": "Internal Server Error"}), 500
 
     finally:
         if conn:
             conn.close()
+
 
 
 @animal_bp.route('/animals/search', methods=['GET'])
@@ -120,7 +136,7 @@ def search_animals():
                 "category": row.CategoryName,
                 "zone": row.ZoneName,
                 "description": row.Description,
-                "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None
+                "image": (config.BACKEND_URL + row.MainImage) if row.MainImage else None
 })
 
         return jsonify(animals)
@@ -176,7 +192,18 @@ def get_animal_detail(id):
         conn = get_db_connection()
 
         cursor1 = conn.cursor()
-        cursor1.execute("{CALL sp_get_animal_detail(?)}", (id,))
+        cursor1.execute("""
+            SELECT a.*, c.CName AS CategoryName, z.ZName AS ZoneName,
+                   ca.DangerousLevel, z.Theme, z.Weather,
+                   d.DietType, d.Description AS FoodInfo
+            FROM Animal a
+            LEFT JOIN Category c ON a.CID = c.CID
+            LEFT JOIN Cage ca ON a.CAID = ca.CAID
+            LEFT JOIN Zone z ON ca.ZID = z.ZID
+            LEFT JOIN Consumes con ON a.AID = con.AID
+            LEFT JOIN Diet d ON con.DID = d.DID
+            WHERE a.AID = ?
+        """, (id,))
         row = cursor1.fetchone()
 
         if not row:
@@ -190,30 +217,26 @@ def get_animal_detail(id):
             WHERE hm.AID = ?
         """
         cursor2.execute(image_query, (id,))
-        # images = [(MEDIA_BASE_URL + r[0]) for r in cursor2.fetchall() if r[0]]
-        # images = [r[0] for r in cursor2.fetchall() if r[0]]
-
-        images = [
-            config.BACKEND_URL + r[0]
-            for r in cursor2.fetchall()
-            if r[0]
-        ]
-
-        print(images)
+        images = [(config.BACKEND_URL + r[0]) for r in cursor2.fetchall() if r[0]]
 
         animal_detail = {
             "id": row.AID,
             "name": row.Name,
             "sciName": row.SciName,
             "description": row.Description,
-            "longDescription": row.BioCharacter,
             "sex": row.Sex,
             "quantity": row.Quantity,
             "category": row.CategoryName,
             "zone": row.ZoneName,
             "dangerLevel": row.DangerousLevel,
             "image": images[0] if images else None,
-            "images": images
+            "images": images,
+            "diet": row.DietType,
+            "foodInfo": row.FoodInfo,
+            "zoneName": row.ZoneName,
+            "zoneTheme": row.Theme,
+            "zoneWeather": row.Weather,
+            "cageId": row.CAID,   # ✅ เพิ่ม cageId
         }
 
         return jsonify(animal_detail)
@@ -223,7 +246,7 @@ def get_animal_detail(id):
         return jsonify({"error": "Database error"}), 500
 
     except Exception as e:
-        print("Error /animals/<id>:", e)
+        print("Error /api/animals/<id>:", e)
         return jsonify({"error": "Internal Server Error"}), 500
 
     finally:

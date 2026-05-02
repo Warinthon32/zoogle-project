@@ -132,7 +132,7 @@ async function getEvents() {
 // ─── Render Helpers ────────────────────────────────────────────────────────────
 
 function renderHomeCard(animal) {
-    const img = (animal.image || '').split('/').pop();
+    const img = animal.image;
     return `
         <div class="animal-card">
             <div class="card-image-wrapper">
@@ -156,11 +156,12 @@ function renderHomeCard(animal) {
 }
 
 function renderAnimalCard(animal) {
-    const img = (animal.image || '').split('/').pop();
+
+
     return `
         <div class="animal-card list-card">
             <div class="card-image-wrapper">
-                <img src="${img}" alt="${animal.name}"
+                <img src="${animal.image}" alt="${animal.name}"
                      onerror="this.src='../images/unicorn.png'">
             </div>
             <div class="card-content">
@@ -184,8 +185,7 @@ function renderAnimalCard(animal) {
 }
 
 function renderRelatedCard(animal) {
-    const img = (animal.image || '').split('/').pop();
-    console.log('Rendering related card for:', animal.name, 'with image:', img);
+    const img = animal.image;
     return `
         <div class="animal-card list-card">
             <div class="card-image-wrapper">
@@ -348,6 +348,8 @@ async function initAnimalDetailPage() {
         return;
     }
 
+    console.log(animal)
+
     if (!animal) {
         document.body.innerHTML = '<p style="padding:2rem;text-align:center;">Animal not found.</p>';
         return;
@@ -361,10 +363,12 @@ async function initAnimalDetailPage() {
         if (attr) el[attr] = value;
         else el.textContent = value;
     };
-
+    console.log(animal)
+    console.log(animal.image)
     set('#detail-breadcrumb', animal.name);
-    set('#detail-hero-img', `../images/${(animal.image || '').split('/').pop()}`, 'src');
-    set('#detail-hero-img', animal.name, 'alt');
+
+    document.querySelector('#detail-hero-img').src = animal.image
+    
     set('#detail-name', animal.name);
     set('#detail-sci-name', animal.sciName);
     set('#detail-hero-desc', '');
@@ -378,7 +382,7 @@ async function initAnimalDetailPage() {
     set('#detail-zone-weather', animal.zoneWeather);
 
     document.querySelectorAll('.gallery-img').forEach(img => {
-        img.src = `../images/${(animal.image || '').split('/').pop()}`;
+        img.src = animal.image;
         img.alt = animal.name;
     });
 

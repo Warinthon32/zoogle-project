@@ -88,8 +88,8 @@ function _renderPins(zoneKey) {
 
 // ── Card builder ─────────────────────────────────────────────────────────────
 function _buildCard(a) {
-    const imgFile = (a.image || '').split('/').pop();
-    const img     = `../images/${imgFile}`;
+    const imgFile = a.image;
+    const img     = imgFile;
 
     const sciHtml = a.sciName
         ? `<p class="map-sci-name">${a.sciName}</p>`

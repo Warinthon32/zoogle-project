@@ -7,227 +7,228 @@ user_bp = Blueprint('user', __name__)
 
 MEDIA_BASE_URL = "http://127.0.0.1:5500/frontend/images/"
 
-def get_db_connection():
-    try:
-        server = 'localhost\SQLEXPRESS'
-        database = 'ZoogleDB'
-        conn_str = (
-            f"DRIVER={{SQL Server}};"
-            f"SERVER={server};"
-            f"DATABASE={database};"
-            "Trusted_Connection=yes;"
-        )
-        return pyodbc.connect(conn_str)
-    except Exception as e:
-        print("DB Connection Error:", e)
-        raise
+# def get_db_connection():
+#     try:
+#         server = 'localhost\SQLEXPRESS'
+#         database = 'ZoogleDB'
+#         conn_str = (
+#             f"DRIVER={{SQL Server}};"
+#             f"SERVER={server};"
+#             f"DATABASE={database};"
+#             "Trusted_Connection=yes;"
+#         )
+#         return pyodbc.connect(conn_str)
+#     except Exception as e:
+#         print("DB Connection Error:", e)
+#         raise
 
 
-def _format_animal_row(row):
-    return {
-        "id": row.AID,
-        "name": row.Name,
-        "sciName": row.SciName,
-        "category": row.Category,
-        "zone": row.Zone,
-        "image": ( config.BACKEND_URL + str(   row.MainImage)) if row.MainImage else None,
-        "dangerLevel": row.DangerousLevel,
-        "description": row.Description,
-        "diet": row.DietType,
-        "foodInfo": row.FoodInfo,
-        "zoneName": row.Zone,
-        "zoneTheme": row.Theme,
-        "zoneWeather": row.Weather,
-        "cageId": row.CAID,   # ✅ เพิ่ม cageId
-    }
+# def _format_animal_row(row):
+#     return {
+#         "id": row.AID,
+#         "name": row.Name,
+#         "sciName": row.SciName,
+#         "category": row.Category,
+#         "zone": row.Zone,
+#         "image": ( config.BACKEND_URL + str(row.MainImage)) if row.MainImage else None,
+#         "dangerLevel": row.DangerousLevel,
+#         "description": row.Description,
+#         "diet": row.DietType,
+#         "foodInfo": row.FoodInfo,
+#         "zoneName": row.Zone,
+#         "zoneTheme": row.Theme,
+#         "zoneWeather": row.Weather,
+#         "cageId": row.CAID,   # ✅ เพิ่ม cageId
+#     }
 
 
-@user_bp.route('/api/animals', methods=['GET'])
-def get_all_animals():
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+# @user_bp.route('/animals', methods=['GET'])
+# def get_all_animals():
+#     conn = None
+#     try:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
 
-        category = request.args.get('category')
+#         category = request.args.get('category')
 
-        query = """
-    SELECT
-        v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel,
-        a.Description,
-        a.CAID,
-        d.DietType,
-        d.Description AS FoodInfo,
-        z.Theme,
-        z.Weather,
-        (
-            SELECT TOP 1 m.MediaURL
-            FROM MediaURL m
-            JOIN Has_Media hm ON m.MID = hm.MID
-            WHERE hm.AID = v.AID
-        ) AS MainImage
-    FROM vw_animal_full_info v
-    JOIN Animal a ON v.AID = a.AID
-    LEFT JOIN Consumes con ON a.AID = con.AID
-    LEFT JOIN Diet d ON con.DID = d.DID
-    LEFT JOIN Cage ca ON a.CAID = ca.CAID
-    LEFT JOIN Zone z ON ca.ZID = z.ZID
-"""
+#         query = """
+#     SELECT
+#         v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel,
+#         a.Description,
+#         a.CAID,
+#         d.DietType,
+#         d.Description AS FoodInfo,
+#         z.Theme,
+#         z.Weather,
+#         (
+#             SELECT TOP 1 m.MediaURL
+#             FROM MediaURL m
+#             JOIN Has_Media hm ON m.MID = hm.MID
+#             WHERE hm.AID = v.AID
+#         ) AS MainImage
+#     FROM vw_animal_full_info v
+#     JOIN Animal a ON v.AID = a.AID
+#     LEFT JOIN Consumes con ON a.AID = con.AID
+#     LEFT JOIN Diet d ON con.DID = d.DID
+#     LEFT JOIN Cage ca ON a.CAID = ca.CAID
+#     LEFT JOIN Zone z ON ca.ZID = z.ZID
+# """
 
-        if category:
-            query += " WHERE v.Category = ?"
-            cursor.execute(query, (category,))
-        else:
-            cursor.execute(query)
+#         if category:
+#             query += " WHERE v.Category = ?"
+#             cursor.execute(query, (category,))
+#         else:
+#             cursor.execute(query)
 
-        animals = [_format_animal_row(row) for row in cursor.fetchall()]
-        return jsonify(animals)
+#         animals = [_format_animal_row(row) for row in cursor.fetchall()]
+#         # print("ANIIIIIIIIIIIIIIIIIIIIIIIII", animals)
+#         return jsonify(animals)
 
-    except Exception as e:
-        print("Error /api/animals:", e)
-        return jsonify({"error": "Internal Server Error"}), 500
+#     except Exception as e:
+#         print("Error /api/animals:", e)
+#         return jsonify({"error": "Internal Server Error"}), 500
 
-    finally:
-        if conn:
-            conn.close()
-
-
-@user_bp.route('/api/animals/search', methods=['GET'])
-def search_animals():
-    """GET /api/animals/search?keyword=X — เรียกจาก user.js searchAnimals()"""
-    keyword = request.args.get('keyword', '').strip()
-    if not keyword:
-        return jsonify([])
-
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("{CALL sp_search_animals(?)}", (keyword,))
-
-        animals = []
-        for row in cursor.fetchall():
-            animals.append({
-                "id": row.AID,
-                "name": row.Name,
-                "sciName": row.SciName,
-                "category": row.CategoryName,
-                "zone": row.ZoneName,
-                "description": row.Description,
-                "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None
-            })
-
-        return jsonify(animals)
-
-    except Exception as e:
-        print("Error /api/animals/search:", e)
-        return jsonify({"error": "Internal Server Error"}), 500
-
-    finally:
-        if conn:
-            conn.close()
+#     finally:
+#         if conn:
+#             conn.close()
 
 
-@user_bp.route('/api/events', methods=['GET'])
-def get_events():
-    """GET /api/events — เรียกจาก user.js getEvents()"""
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT e.EID, e.ShowName, e.ShowTime, e.ShowDate, z.ZName AS Zone
-            FROM Event e
-            LEFT JOIN Zone z ON e.ZID = z.ZID
-            ORDER BY e.ShowDate, e.ShowTime
-        """)
+# @user_bp.route('/animals/search', methods=['GET'])
+# def search_animals():
+#     """GET /api/animals/search?keyword=X — เรียกจาก user.js searchAnimals()"""
+#     keyword = request.args.get('keyword', '').strip()
+#     if not keyword:
+#         return jsonify([])
 
-        events = []
-        for row in cursor.fetchall():
-            events.append({
-                "id": row.EID,
-                "showName": row.ShowName,
-                "showTime": str(row.ShowTime),
-                "showDate": str(row.ShowDate),
-                "zone": row.Zone
-            })
+#     conn = None
+#     try:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute("{CALL sp_search_animals(?)}", (keyword,))
 
-        return jsonify(events)
+#         animals = []
+#         for row in cursor.fetchall():
+#             animals.append({
+#                 "id": row.AID,
+#                 "name": row.Name,
+#                 "sciName": row.SciName,
+#                 "category": row.CategoryName,
+#                 "zone": row.ZoneName,
+#                 "description": row.Description,
+#                 "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None
+#             })
 
-    except Exception as e:
-        print("Error /api/events:", e)
-        return jsonify({"error": "Internal Server Error"}), 500
+#         return jsonify(animals)
 
-    finally:
-        if conn:
-            conn.close()
+#     except Exception as e:
+#         print("Error /api/animals/search:", e)
+#         return jsonify({"error": "Internal Server Error"}), 500
+
+#     finally:
+#         if conn:
+#             conn.close()
 
 
-@user_bp.route('/api/animals/<int:id>', methods=['GET'])
-def get_animal_detail(id):
-    conn = None
-    try:
-        conn = get_db_connection()
+# @user_bp.route('/events', methods=['GET'])
+# def get_events():
+#     """GET /api/events — เรียกจาก user.js getEvents()"""
+#     conn = None
+#     try:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute("""
+#             SELECT e.EID, e.ShowName, e.ShowTime, e.ShowDate, z.ZName AS Zone
+#             FROM Event e
+#             LEFT JOIN Zone z ON e.ZID = z.ZID
+#             ORDER BY e.ShowDate, e.ShowTime
+#         """)
 
-        cursor1 = conn.cursor()
-        cursor1.execute("""
-            SELECT a.*, c.CName AS CategoryName, z.ZName AS ZoneName,
-                   ca.DangerousLevel, z.Theme, z.Weather,
-                   d.DietType, d.Description AS FoodInfo
-            FROM Animal a
-            LEFT JOIN Category c ON a.CID = c.CID
-            LEFT JOIN Cage ca ON a.CAID = ca.CAID
-            LEFT JOIN Zone z ON ca.ZID = z.ZID
-            LEFT JOIN Consumes con ON a.AID = con.AID
-            LEFT JOIN Diet d ON con.DID = d.DID
-            WHERE a.AID = ?
-        """, (id,))
-        row = cursor1.fetchone()
+#         events = []
+#         for row in cursor.fetchall():
+#             events.append({
+#                 "id": row.EID,
+#                 "showName": row.ShowName,
+#                 "showTime": str(row.ShowTime),
+#                 "showDate": str(row.ShowDate),
+#                 "zone": row.Zone
+#             })
 
-        if not row:
-            abort(404, description="Animal not found")
+#         return jsonify(events)
 
-        cursor2 = conn.cursor()
-        image_query = """
-            SELECT m.MediaURL
-            FROM MediaURL m
-            JOIN Has_Media hm ON m.MID = hm.MID
-            WHERE hm.AID = ?
-        """
-        cursor2.execute(image_query, (id,))
-        images = [(MEDIA_BASE_URL + r[0]) for r in cursor2.fetchall() if r[0]]
+#     except Exception as e:
+#         print("Error /api/events:", e)
+#         return jsonify({"error": "Internal Server Error"}), 500
 
-        animal_detail = {
-            "id": row.AID,
-            "name": row.Name,
-            "sciName": row.SciName,
-            "description": row.Description,
-            "sex": row.Sex,
-            "quantity": row.Quantity,
-            "category": row.CategoryName,
-            "zone": row.ZoneName,
-            "dangerLevel": row.DangerousLevel,
-            "image": images[0] if images else None,
-            "images": images,
-            "diet": row.DietType,
-            "foodInfo": row.FoodInfo,
-            "zoneName": row.ZoneName,
-            "zoneTheme": row.Theme,
-            "zoneWeather": row.Weather,
-            "cageId": row.CAID,   # ✅ เพิ่ม cageId
-        }
+#     finally:
+#         if conn:
+#             conn.close()
 
-        return jsonify(animal_detail)
 
-    except pyodbc.Error as e:
-        print("SQL Error:", e)
-        return jsonify({"error": "Database error"}), 500
+# @user_bp.route('/animals/<int:id>', methods=['GET'])
+# def get_animal_detail(id):
+#     conn = None
+#     try:
+#         conn = get_db_connection()
 
-    except Exception as e:
-        print("Error /api/animals/<id>:", e)
-        return jsonify({"error": "Internal Server Error"}), 500
+#         cursor1 = conn.cursor()
+#         cursor1.execute("""
+#             SELECT a.*, c.CName AS CategoryName, z.ZName AS ZoneName,
+#                    ca.DangerousLevel, z.Theme, z.Weather,
+#                    d.DietType, d.Description AS FoodInfo
+#             FROM Animal a
+#             LEFT JOIN Category c ON a.CID = c.CID
+#             LEFT JOIN Cage ca ON a.CAID = ca.CAID
+#             LEFT JOIN Zone z ON ca.ZID = z.ZID
+#             LEFT JOIN Consumes con ON a.AID = con.AID
+#             LEFT JOIN Diet d ON con.DID = d.DID
+#             WHERE a.AID = ?
+#         """, (id,))
+#         row = cursor1.fetchone()
 
-    finally:
-        if conn:
-            conn.close()
+#         if not row:
+#             abort(404, description="Animal not found")
+
+#         cursor2 = conn.cursor()
+#         image_query = """
+#             SELECT m.MediaURL
+#             FROM MediaURL m
+#             JOIN Has_Media hm ON m.MID = hm.MID
+#             WHERE hm.AID = ?
+#         """
+#         cursor2.execute(image_query, (id,))
+#         images = [(MEDIA_BASE_URL + r[0]) for r in cursor2.fetchall() if r[0]]
+
+#         animal_detail = {
+#             "id": row.AID,
+#             "name": row.Name,
+#             "sciName": row.SciName,
+#             "description": row.Description,
+#             "sex": row.Sex,
+#             "quantity": row.Quantity,
+#             "category": row.CategoryName,
+#             "zone": row.ZoneName,
+#             "dangerLevel": row.DangerousLevel,
+#             "image": images[0] if images else None,
+#             "images": images,
+#             "diet": row.DietType,
+#             "foodInfo": row.FoodInfo,
+#             "zoneName": row.ZoneName,
+#             "zoneTheme": row.Theme,
+#             "zoneWeather": row.Weather,
+#             "cageId": row.CAID,   # ✅ เพิ่ม cageId
+#         }
+
+#         return jsonify(animal_detail)
+
+#     except pyodbc.Error as e:
+#         print("SQL Error:", e)
+#         return jsonify({"error": "Database error"}), 500
+
+#     except Exception as e:
+#         print("Error /api/animals/<id>:", e)
+#         return jsonify({"error": "Internal Server Error"}), 500
+
+#     finally:
+#         if conn:
+#             conn.close()
 

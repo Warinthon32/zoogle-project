@@ -1331,11 +1331,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
-    const adminContent = document.querySelector('.admin-content');
+    const mainContent = document.getElementById('dashboard-view');
+    const animalContent = document.getElementById("dashboard-view");
+    const medContent = document.getElementById("medical-view");
+    const staffContent = document.getElementById("staff-view");
 
-    if (adminContent) {
-        adminContent.style.visibility = 'hidden';
-    }
+    mainContent.style.visibility = 'hidden';
+    animalContent.style.visibility = 'hidden';
+    medContent.style.visibility = 'hidden';
+    staffContent.style.visibility = 'hidden';
+
+
 
     _allDataCache = await fetchAllDataCache()
     
@@ -1348,7 +1354,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await Promise.all(tasks);
 
-    adminContent.style.visibility = 'visible';
+    mainContent.style.visibility = 'visible';
+    animalContent.style.visibility = 'visible';
+    medContent.style.visibility = 'visible';
+    staffContent.style.visibility = 'visible';
 });
 
 

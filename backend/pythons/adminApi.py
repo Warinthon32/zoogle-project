@@ -102,9 +102,7 @@ def get_all_admin_animals():
                 "image": config.BACKEND_URL + data["MainImage"] if data["MainImage"] else None
             })
 
-        # for item in result:
-        #     print(item["image"])
-        # print()
+
         return jsonify(result)
 
     except Exception as e:
@@ -434,7 +432,6 @@ def get_health_records():
                 "staffId": data.get("SID"),
                 "staffName": f"{data.get('Name', '')} {data.get('Surname', '')}".strip()
             })
-        print(result)
         return jsonify(result)
     except Exception as e:
         print(f"Error /health-records:", e)
