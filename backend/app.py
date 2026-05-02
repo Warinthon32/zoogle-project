@@ -3,6 +3,8 @@ from flask_cors import CORS
 from datetime import timedelta
 import os
 
+from pythons.useMockData import initUseMockData
+
 from pythons.adminApi import admin_bp
 from pythons.animalShowApi import animal_bp
 from pythons.auth import auth_bp
@@ -35,5 +37,16 @@ def not_found(error):
 def internal_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
+ran = False
+
+@app.before_request
+def init_once():
+    global ran
+    if not ran:
+        initUseMockData()
+        ran = True
+
 if __name__ == "__main__":
+
     app.run(debug=True, host="127.0.0.1", port=5000)
+    
