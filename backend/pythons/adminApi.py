@@ -99,7 +99,7 @@ def get_all_admin_animals():
                 "zone":         data["Zone"],
                 "dietId":       data["DID"],
                 "diet":         data["Diet"],
-                "image":        config.BACKEND_URL + data["MainImage"]
+                "image": config.BACKEND_URL + data["MainImage"] if data["MainImage"] else None
             })
 
         for item in result:
@@ -717,7 +717,7 @@ def get_has_media():
         {
             "aid": row.AID,
             "mid": row.MID,
-            "url": config.BACKEND_URL + str(row.MediaURL),
+            "url": config.BACKEND_URL + str(row.MediaURL) if row.MediaURL else None,
             "uploadDate": str(row.UploadDate) if row.UploadDate else None
         }
         for row in cursor.fetchall()

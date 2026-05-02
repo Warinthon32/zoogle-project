@@ -713,6 +713,11 @@ async function saveAnimalToDB() {
     for (const f of requiredFields) {
         if (!formData[f.key]) { alert(`Please enter ${f.label}.`); return; }
     }
+      const validSexValues = ['male', 'female', 'm', 'f'];
+if (!validSexValues.includes(formData.sex)) {
+    alert('Please select a valid sex (Male or Female).');
+    return;
+}
 
     const sex_map = { male: 'm', female: 'f' };
     formData.sex = sex_map[formData.sex] ?? formData.sex;
