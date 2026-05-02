@@ -9,6 +9,140 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ── Zone map system ── */
+        .zone-map {
+            display: none;
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .zone-map.zone-active { display: block; }
+
+        /* ── All-zones overview grid ── */
+        .all-zones-overview {
+            width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(4, 1fr);
+            gap: 3px;
+            background: #888;
+        }
+        .zone-ov-mythical { grid-column: 1 / -1; }
+        .zone-overview-tile {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: filter 0.2s, transform 0.15s;
+        }
+        .zone-overview-tile:hover { filter: brightness(0.85); transform: scale(0.98); }
+        .zone-ov-name {
+            font-size: 1.05rem; font-weight: 800;
+            color: rgba(255,255,255,0.97);
+            text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+            text-align: center;
+        }
+        .zone-ov-animals {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.82);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        /* ── Zone background base ── */
+        .zone-bg {
+            width: 100%; height: 100%;
+            position: relative;
+            border: 12px solid;
+            border-radius: 24px;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+
+        /* Savanna */
+        .savanna-bg  { background-color: #e5cdab; border-color: #ceae82; }
+
+        /* Arctic */
+        .arctic-bg   { background: linear-gradient(150deg,#b8d8ec 0%,#daeef8 55%,#f0f9ff 100%); border-color: #88c0d8; }
+        .a-snow { position:absolute; background:rgba(255,255,255,0.88); border:2px solid rgba(180,220,240,0.4); }
+        .a-snow-1 { width:220px;height:130px; top:-25px;left:-25px; border-radius:40% 65% 55% 70%; }
+        .a-snow-2 { width:160px;height:90px;  bottom:8%;right:4%;   border-radius:65% 40% 70% 35%; }
+        .a-snow-3 { width:90px; height:55px;  bottom:28%;left:38%;  border-radius:50%; }
+        .a-lake   { position:absolute; width:130px;height:75px; top:32%;right:22%; background:#a0d4e8; border:3px solid #70b4d0; border-radius:45% 55% 50% 50%; }
+
+        /* Tropical Forest */
+        .tropical-bg { background-color:#1a5230; border-color:#0d3a1e; }
+        .t-canopy { position:absolute; background:#0e3a20; border-radius:50%; }
+        .t-tree-1 { width:190px;height:160px; top:-30px;left:-30px; }
+        .t-tree-2 { width:160px;height:135px; bottom:-20px;right:-20px; }
+        .t-tree-3 { width:105px;height:85px;  top:18%;right:4%; }
+        .t-river  { position:absolute; background:#3a8fd4; border:3px solid #2070b0; width:36px;height:80%;top:0;left:32%;border-radius:0 0 50% 50%; }
+
+        /* Ocean */
+        .ocean-bg { background:linear-gradient(180deg,#083d6a 0%,#0f5c9e 50%,#1a7abf 75%,#c8a060 100%); border-color:#062d50; }
+        .o-wave { position:absolute; border:3px solid rgba(255,255,255,0.18); border-radius:50%; background:transparent; }
+        .o-wave-1 { width:300px;height:200px; top:12%;left:-60px; }
+        .o-wave-2 { width:250px;height:160px; top:32%;right:-35px; }
+        .o-wave-3 { width:200px;height:120px; bottom:18%;left:18%; }
+        .o-coral  { position:absolute; background:#d4724a; border-radius:50% 50% 40% 40%; }
+        .o-coral-1 { width:50px;height:35px; bottom:16%;left:22%; }
+        .o-coral-2 { width:35px;height:25px; bottom:18%;left:40%; background:#c46048; }
+
+        /* Rainforest */
+        .rainforest-bg { background-color:#1e5c3a; border-color:#123d26; }
+        .rf-canopy { position:absolute; background:#123d26; border-radius:50%; }
+        .rf-tree-1 { width:175px;height:145px; top:-22px;right:-22px; }
+        .rf-tree-2 { width:125px;height:100px; bottom:-12px;left:-12px; }
+        .rf-tree-3 { width:85px; height:70px;  top:28%;right:7%; }
+        .rf-stream { position:absolute; background:#4090cc; border:2px solid #2870a8; border-radius:50px; }
+        .rf-stream-1 { width:30px;height:65%;top:0;left:22%;border-radius:0 0 40% 40%; }
+        .rf-stream-2 { width:50%;height:24px;top:56%;left:16%;border-radius:50px; }
+
+        /* Bamboo Forest */
+        .bamboo-bg { background-color:#3d6e4c; border-color:#2a4e34; }
+        .b-stalk   { position:absolute; background:#5a9468; border-radius:3px; border:1px solid #3a7450; }
+        .b-pond    { position:absolute; background:#4090cc; border:3px solid #2870a8; border-radius:50%; }
+
+        /* Zone label colour helpers */
+        .lbl-dark  { color:#0a3a5a; text-shadow:1px 1px 0 rgba(255,255,255,0.6); }
+        .lbl-light { color:rgba(255,255,255,0.92); text-shadow:1px 1px 6px rgba(0,0,0,0.65); }
+        .lbl-ocean { color:rgba(255,255,255,0.92); text-shadow:0 2px 8px rgba(0,0,10,0.75); }
+
+        /* Mythical Realm */
+        .mythical-bg { background: linear-gradient(135deg,#1a0a3a 0%,#2d1b69 50%,#0a1a3a 100%); border-color:#8a5cf6; }
+        .m-star { position:absolute; background:rgba(255,255,200,0.9); border-radius:50%; }
+        .m-orb  { position:absolute; border-radius:50%; background:radial-gradient(circle,rgba(160,120,255,0.35),transparent); border:1px solid rgba(160,120,255,0.3); }
+        .lbl-mythical { color:rgba(240,220,255,0.96); text-shadow:0 0 14px rgba(180,120,255,0.8); }
+
+        /* Pin colour helpers */
+        .pi-dark    { color:#0a3a5a !important; }
+        .pi-light   { color:#ffffff !important; }
+        .pi-mythical{ color:#d4a8ff !important; }
+
+        /* ── Map animal card ── */
+        .map-animal-card { border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 2px 14px rgba(0,0,0,0.1); }
+        .map-animal-card .card-image-wrapper { height: 185px; overflow: hidden; }
+        .map-animal-card .card-image-wrapper img { width:100%; height:100%; object-fit:cover; display:block; }
+        .map-animal-card .card-content { padding: 1rem; }
+        .map-animal-card h4 { margin: 0 0 0.1rem; font-size: 1.1rem; color: #1a3a22; }
+        .map-sci-name { font-size: 0.76rem; color: #aaa; font-style: italic; margin: 0 0 0.55rem; }
+        .map-detail-grid { margin: 0.75rem 0; border: 1px solid #e4ece5; border-radius: 8px; overflow: hidden; }
+        .map-detail-row { display:flex; justify-content:space-between; align-items:center; padding: 0.42rem 0.75rem; font-size: 0.82rem; border-bottom: 1px solid #e4ece5; }
+        .map-detail-row:last-child { border-bottom: none; }
+        .map-detail-row:nth-child(even) { background: #f7faf8; }
+        .map-detail-label { color: #777; font-weight: 500; }
+        .map-detail-value { color: #2a2a2a; font-weight: 600; }
+        .map-dot.filled { color: #c0392b; font-size: 0.7rem; }
+        .map-dot.empty  { color: #ccc;    font-size: 0.7rem; }
+        .map-card-loading { display:flex; align-items:center; justify-content:center; min-height: 200px; }
+        .map-spinner { width:34px; height:34px; border:3px solid #e4ece5; border-top-color:#3a8052; border-radius:50%; animation: map-spin 0.75s linear infinite; }
+        @keyframes map-spin { to { transform: rotate(360deg); } }
+    </style>
 </head>
 
 <body class="map-page">
@@ -27,7 +161,6 @@
             <a href="animals.html">Animals</a>
             <a href="map.html" class="active">Zoo Map</a>
             <a href="events.html">Events</a>
-            <a href="#footer">About</a>
         </nav>
         <button class="btn-primary">Get Tickets</button>
     </header>
@@ -50,84 +183,218 @@
             </div>
             <div class="quick-filters">
                 <span class="filter-label">Zones:</span>
-                <button class="pill-btn active">All Zones</button>
-                <button class="pill-btn">Savanna</button>
-                <button class="pill-btn">Arctic</button>
-                <button class="pill-btn">Tropical Forest</button>
-                <button class="pill-btn">Ocean</button>
-                <button class="pill-btn">Rainforest</button>
-                <button class="pill-btn">Bamboo Forest</button>
+                <button class="pill-btn active"  data-zone="all">All Zones</button>
+                <button class="pill-btn" data-zone="savanna">Savanna</button>
+                <button class="pill-btn" data-zone="arctic">Arctic</button>
+                <button class="pill-btn" data-zone="tropical">Tropical Forest</button>
+                <button class="pill-btn" data-zone="ocean">Ocean</button>
+                <button class="pill-btn" data-zone="rainforest">Rainforest</button>
+                <button class="pill-btn" data-zone="bamboo">Bamboo Forest</button>
+                <button class="pill-btn" data-zone="mythical">Mythical Realm</button>
             </div>
         </section>
 
         <section class="map-layout">
             <div class="map-view">
                 <div class="map-graphic">
-                    <!-- Pure CSS Representation of a map -->
-                    <div class="map-bg">
-                        <div class="map-water pool-1"></div>
-                        <div class="map-water pool-2"></div>
-                        <div class="map-path"></div>
-                        <div class="map-path-2"></div>
-                        <div class="zone-label">โซนทุ่งหญ้าสะวันนา<br>SAVANNA ZONE</div>
 
-                        <!-- Map Pins -->
-                        <div class="map-pin" style="top: 30%; left: 60%;"></div>
-                        <div class="map-pin" style="top: 55%; left: 35%;"></div>
-                        <div class="map-pin" style="top: 65%; left: 45%;"></div>
-                        <!-- Interactive Pin for Lion -->
-                        <div class="map-pin interactive" id="lion-pin" style="top: 50%; left: 45%;"
-                            onclick="showAnimalDetail('lion')">
-                            <div class="pin-icon">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path
-                                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                                </svg>
+                    <!-- ══ All Zones overview ══ -->
+                    <div class="zone-map zone-active" id="zone-all">
+                        <div class="all-zones-overview">
+                            <div class="zone-overview-tile" style="background:#b8864e" data-zone="savanna">
+                                <span class="zone-ov-name">Savanna</span>
+                                <span class="zone-ov-animals">Lion · Flamingo · Cheetah</span>
+                            </div>
+                            <div class="zone-overview-tile" style="background:#5aaac8" data-zone="arctic">
+                                <span class="zone-ov-name">Arctic</span>
+                                <span class="zone-ov-animals">Penguin · Polar Bear</span>
+                            </div>
+                            <div class="zone-overview-tile" style="background:#1a5230" data-zone="tropical">
+                                <span class="zone-ov-name">Tropical Forest</span>
+                                <span class="zone-ov-animals">Tiger · Crocodile · Komodo</span>
+                            </div>
+                            <div class="zone-overview-tile" style="background:#0f5c9e" data-zone="ocean">
+                                <span class="zone-ov-name">Ocean</span>
+                                <span class="zone-ov-animals">Dolphin · Sea Turtle</span>
+                            </div>
+                            <div class="zone-overview-tile" style="background:#1e5c3a" data-zone="rainforest">
+                                <span class="zone-ov-name">Rainforest</span>
+                                <span class="zone-ov-animals">Jaguar · Scarlet Macaw</span>
+                            </div>
+                            <div class="zone-overview-tile" style="background:#3d6e4c" data-zone="bamboo">
+                                <span class="zone-ov-name">Bamboo Forest</span>
+                                <span class="zone-ov-animals">Snow Leopard</span>
+                            </div>
+                            <div class="zone-overview-tile zone-ov-mythical" style="background:linear-gradient(135deg,#2d1b69 0%,#1a0a3a 100%)" data-zone="mythical">
+                                <span class="zone-ov-name">Mythical Realm</span>
+                                <span class="zone-ov-animals">Unicorn · Griffin · Phoenix</span>
                             </div>
                         </div>
                     </div>
+
+                    <!-- ══ Savanna ══ -->
+                    <div class="zone-map" id="zone-savanna">
+                        <div class="zone-bg savanna-bg">
+                            <div class="map-water pool-1"></div>
+                            <div class="map-water pool-2"></div>
+                            <div class="map-path"></div>
+                            <div class="map-path-2"></div>
+                            <div class="zone-label">โซนทุ่งหญ้าสะวันนา<br>SAVANNA ZONE</div>
+                            <div class="map-pin interactive" id="pin-lion" style="top:50%;left:45%" onclick="showAnimalPin('lion')">
+                                <div class="pin-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                            <div class="map-pin interactive" id="pin-flamingo" style="top:24%;left:66%" onclick="showAnimalPin('flamingo')">
+                                <div class="pin-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                            <div class="map-pin interactive" id="pin-cheetah" style="top:68%;left:28%" onclick="showAnimalPin('cheetah')">
+                                <div class="pin-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ══ Arctic ══ -->
+                    <div class="zone-map" id="zone-arctic">
+                        <div class="zone-bg arctic-bg">
+                            <div class="a-snow a-snow-1"></div>
+                            <div class="a-snow a-snow-2"></div>
+                            <div class="a-snow a-snow-3"></div>
+                            <div class="a-lake"></div>
+                            <div class="map-path" style="background:#cce8f8;border-color:#a8d4ec;transform:rotate(3deg)"></div>
+                            <div class="zone-label lbl-dark">โซนอาร์กติก<br>ARCTIC ZONE</div>
+                            <div class="map-pin interactive" id="pin-penguin" style="top:56%;left:42%" onclick="showAnimalPin('penguin')">
+                                <div class="pin-icon pi-dark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                            <div class="map-pin interactive" id="pin-polarbear" style="top:28%;left:62%" onclick="showAnimalPin('polarbear')">
+                                <div class="pin-icon pi-dark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ══ Tropical Forest ══ -->
+                    <div class="zone-map" id="zone-tropical">
+                        <div class="zone-bg tropical-bg">
+                            <div class="t-canopy t-tree-1"></div>
+                            <div class="t-canopy t-tree-2"></div>
+                            <div class="t-canopy t-tree-3"></div>
+                            <div class="t-river"></div>
+                            <div class="zone-label lbl-light">โซนป่าเขตร้อน<br>TROPICAL FOREST ZONE</div>
+                            <div class="map-pin interactive" id="pin-tiger" style="top:36%;left:54%" onclick="showAnimalPin('tiger')">
+                                <div class="pin-icon pi-light"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                            <div class="map-pin interactive" id="pin-crocodile" style="top:60%;left:50%" onclick="showAnimalPin('crocodile')">
+                                <div class="pin-icon pi-light"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                            <div class="map-pin interactive" id="pin-komodo" style="top:46%;left:68%" onclick="showAnimalPin('komodo')">
+                                <div class="pin-icon pi-light"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ══ Ocean ══ -->
+                    <div class="zone-map" id="zone-ocean">
+                        <div class="zone-bg ocean-bg">
+                            <div class="o-wave o-wave-1"></div>
+                            <div class="o-wave o-wave-2"></div>
+                            <div class="o-wave o-wave-3"></div>
+                            <div class="o-coral o-coral-1"></div>
+                            <div class="o-coral o-coral-2"></div>
+                            <div class="zone-label lbl-ocean">โซนมหาสมุทร<br>OCEAN ZONE</div>
+                            <div class="map-pin interactive" id="pin-dolphin" style="top:40%;left:44%" onclick="showAnimalPin('dolphin')">
+                                <div class="pin-icon pi-light"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                            <div class="map-pin interactive" id="pin-turtle" style="top:62%;left:62%" onclick="showAnimalPin('turtle')">
+                                <div class="pin-icon pi-light"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ══ Rainforest ══ -->
+                    <div class="zone-map" id="zone-rainforest">
+                        <div class="zone-bg rainforest-bg">
+                            <div class="rf-canopy rf-tree-1"></div>
+                            <div class="rf-canopy rf-tree-2"></div>
+                            <div class="rf-canopy rf-tree-3"></div>
+                            <div class="rf-stream rf-stream-1"></div>
+                            <div class="rf-stream rf-stream-2"></div>
+                            <div class="zone-label lbl-light">โซนป่าฝน<br>RAINFOREST ZONE</div>
+                            <div class="map-pin interactive" id="pin-jaguar" style="top:44%;left:56%" onclick="showAnimalPin('jaguar')">
+                                <div class="pin-icon pi-light"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                            <div class="map-pin interactive" id="pin-macaw" style="top:28%;left:66%" onclick="showAnimalPin('macaw')">
+                                <div class="pin-icon pi-light"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ══ Bamboo Forest ══ -->
+                    <div class="zone-map" id="zone-bamboo">
+                        <div class="zone-bg bamboo-bg">
+                            <div class="b-stalk" style="left:8%; top:0;   width:18px;height:72%"></div>
+                            <div class="b-stalk" style="left:16%;top:12%; width:14px;height:62%"></div>
+                            <div class="b-stalk" style="left:70%;top:0;   width:20px;height:80%"></div>
+                            <div class="b-stalk" style="left:78%;top:8%;  width:15px;height:68%"></div>
+                            <div class="b-stalk" style="left:86%;top:4%;  width:18px;height:76%"></div>
+                            <div class="b-stalk" style="left:58%;top:18%; width:12px;height:58%"></div>
+                            <div class="b-pond"  style="width:120px;height:74px;top:50%;left:27%"></div>
+                            <div class="map-path" style="background:#2a4e34;border-color:#1a3622;"></div>
+                            <div class="zone-label lbl-light">โซนป่าไผ่<br>BAMBOO FOREST ZONE</div>
+                            <div class="map-pin interactive" id="pin-snowleopard" style="top:48%;left:42%" onclick="showAnimalPin('snowleopard')">
+                                <div class="pin-icon pi-light"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ══ Mythical Realm ══ -->
+                    <div class="zone-map" id="zone-mythical">
+                        <div class="zone-bg mythical-bg">
+                            <div class="m-star" style="width:5px;height:5px;top:10%;left:18%"></div>
+                            <div class="m-star" style="width:7px;height:7px;top:20%;left:74%"></div>
+                            <div class="m-star" style="width:4px;height:4px;top:6%;left:52%"></div>
+                            <div class="m-star" style="width:5px;height:5px;top:72%;left:84%"></div>
+                            <div class="m-star" style="width:6px;height:6px;top:80%;left:10%"></div>
+                            <div class="m-star" style="width:4px;height:4px;top:48%;left:6%"></div>
+                            <div class="m-star" style="width:5px;height:5px;top:34%;left:92%"></div>
+                            <div class="m-star" style="width:3px;height:3px;top:58%;left:46%"></div>
+                            <div class="m-star" style="width:4px;height:4px;top:15%;left:38%"></div>
+                            <div class="m-orb" style="width:180px;height:180px;top:-50px;right:-35px"></div>
+                            <div class="m-orb" style="width:110px;height:110px;bottom:5%;left:3%"></div>
+                            <div class="m-orb" style="width:70px; height:70px; top:30%;left:46%"></div>
+                            <div class="map-path" style="background:rgba(138,92,246,0.25);border-color:rgba(138,92,246,0.4);"></div>
+                            <div class="zone-label lbl-mythical">โซนสัตว์ตำนาน<br>MYTHICAL REALM</div>
+                            <div class="map-pin interactive" id="pin-unicorn" style="top:45%;left:30%" onclick="showAnimalPin('unicorn')">
+                                <div class="pin-icon pi-mythical"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                            <div class="map-pin interactive" id="pin-griffin" style="top:26%;left:60%" onclick="showAnimalPin('griffin')">
+                                <div class="pin-icon pi-mythical"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                            <div class="map-pin interactive" id="pin-phoenix" style="top:64%;left:60%" onclick="showAnimalPin('phoenix')">
+                                <div class="pin-icon pi-mythical"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map controls always on top -->
                     <div class="map-controls">
-                        <button class="map-ctrl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                <line x1="11" y1="8" x2="11" y2="14"></line>
-                                <line x1="8" y1="11" x2="14" y2="11"></line>
-                            </svg></button>
-                        <button class="map-ctrl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                <line x1="8" y1="11" x2="14" y2="11"></line>
-                            </svg></button>
+                        <button class="map-ctrl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            <line x1="11" y1="8" x2="11" y2="14"></line>
+                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                        </svg></button>
+                        <button class="map-ctrl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                        </svg></button>
                     </div>
                 </div>
             </div>
 
             <div class="map-sidebar">
-                <!-- Initial State -->
                 <div class="sidebar-empty" id="sidebar-empty">
                     <h3>Tap a spot to explore</h3>
                 </div>
-
-                <!-- Animal Detail State -->
-                <div class="sidebar-detail hidden" id="sidebar-detail">
-                    <img src="../images/griffin.png" alt="African Lion" class="sidebar-img">
-                    <div class="sidebar-content">
-                        <h2>African Lion</h2>
-                        <div class="tags">
-                            <span class="tag green">Mammals</span>
-                            <span class="tag brown">Savanna</span>
-                        </div>
-                        <p>Majestic predator known as the king of the jungle with powerful roars and social pride
-                            behavior.</p>
-                        <button class="btn-full-width" onclick="window.location.href='animal-detail.html'">View Details
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M9 18l6-6-6-6" />
-                            </svg></button>
-                    </div>
-                </div>
+                <div class="hidden" id="sidebar-card"></div>
             </div>
         </section>
     </main>
@@ -150,7 +417,6 @@
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul class="footer-links">
-                    <li><a href="#">About Us</a></li>
                     <li><a href="animals.html">Animals</a></li>
                     <li><a href="events.html">Events</a></li>
                     <li><a href="#">Education</a></li>
@@ -181,20 +447,9 @@
         </div>
     </footer>
 
-    <script>
-        function showAnimalDetail(animalId) {
-            // Hide empty state
-            document.getElementById('sidebar-empty').classList.add('hidden');
-            // Show detail state
-            document.getElementById('sidebar-detail').classList.remove('hidden');
-
-            // Toggle active pin style
-            document.querySelectorAll('.map-pin').forEach(pin => {
-                pin.classList.remove('active');
-            });
-            document.getElementById(animalId + '-pin').classList.add('active');
-        }
-    </script>
+    <script src="../js/api-config.js"></script>
+    <script src="../js/user.js"></script>
+    <script src="../js/map.js"></script>
 </body>
 
 </html>

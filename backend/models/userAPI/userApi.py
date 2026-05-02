@@ -16,7 +16,7 @@ def get_db_connection():
             "DATABASE=ZoogleDB;"
             "Trusted_Connection=yes;"
             "TrustServerCertificate=yes;"
-)
+        )
         return pyodbc.connect(conn_str)
         print("✅ DB Connected successfully!")
     except Exception as e:
@@ -33,7 +33,8 @@ def _format_animal_row(row):
         "zone": row.Zone,
         "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None,
         "dangerLevel": row.DangerousLevel,
-        "description": row.Description
+        "description": row.Description,
+        "cageId": row.CAID  
     }
 
 
@@ -50,6 +51,7 @@ def get_all_animals():
     SELECT
         v.AID, v.Name, v.SciName, v.Category, v.Zone, v.DangerousLevel,
         a.Description,
+        a.CAID,
         (
             SELECT TOP 1 m.MediaURL
             FROM MediaURL m
@@ -101,7 +103,7 @@ def search_animals():
                 "zone": row.ZoneName,
                 "description": row.Description,
                 "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None
-})
+            })
 
         return jsonify(animals)
 
@@ -183,6 +185,7 @@ def get_animal_detail(id):
             "category": row.CategoryName,
             "zone": row.ZoneName,
             "dangerLevel": row.DangerousLevel,
+            "cageId": row.CAID,  
             "image": images[0] if images else None,
             "images": images
         }
