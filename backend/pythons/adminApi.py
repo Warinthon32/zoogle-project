@@ -102,9 +102,9 @@ def get_all_admin_animals():
                 "image": config.BACKEND_URL + data["MainImage"] if data["MainImage"] else None
             })
 
-        for item in result:
-            print(item["image"])
-        print()
+        # for item in result:
+        #     print(item["image"])
+        # print()
         return jsonify(result)
 
     except Exception as e:

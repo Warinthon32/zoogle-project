@@ -353,40 +353,68 @@ function populateAnimalModalDropdowns(animals, categories, zones, cages, diets) 
             + categories.map(c => `<option value="${c.cid}">${c.name}</option>`).join('');
     }
 
-    // const classSel = sections[1]?.querySelectorAll('select')[1];
-    // if (classSel) {
-    //     classSel.innerHTML = `<option value="">Select Class</option>`
-    //         + ['Mammalia', 'Aves', 'Reptilia', 'Amphibia', 'Actinopterygii', 'Insecta', 'Arachnida', 'Mythical']
-    //             .map(c => `<option value="${c}">${c}</option>`).join('');
-    // }
 
     // Section 2: Zone, Cage, Parent, Diet, Danger
-    const mgmt = sections[2]?.querySelectorAll('select');
+    // const mgmt = sections[2]?.querySelectorAll('select');
 
-    if (mgmt?.[0]) {
-        mgmt[0].innerHTML = `<option value="">Select Zone</option>`
-            + zones.map(z => `<option value="${z.zid}">${z.name}</option>`).join('');
-    }
+    // if (mgmt?.[0]) {
+    //     mgmt[0].innerHTML = `<option value="">Select Zone</option>`
+    //         + zones.map(z => `<option value="${z.zid}">${z.name}</option>`).join('');
+    // }
 
-    if (mgmt?.[1]) {
-        mgmt[1].innerHTML = `<option value="">Select Cage</option>`
+    // const catSel = modal.querySelector('#edit-animal-category');
+    // if (catSel) {
+    //     catSel.innerHTML = `<option value="">Select Category</option>`
+    //         + categories.map(c => `<option value="${c.cid}">${c.name}</option>`).join('');
+    // }
+
+    // const zoneSel = modal.querySelector('#edit-animal-zone');
+    // if (zoneSel) {
+    //     zoneSel.innerHTML = `<option value="">Select Zone</option>`
+    //         + zones.map(z => `<option value="${z.zid}">${z.name}</option>`).join('');
+    // }
+
+    const cageSel = modal.querySelector('#animal-cage');
+    if (cageSel) {
+        cageSel.innerHTML = `<option value="">Select Cage</option>`
             + cages.map(c => `<option value="${c.caid}">Cage ${c.caid}</option>`).join('');
     }
 
-    if (mgmt?.[2]) {
-        mgmt[2].innerHTML = `<option value="">None</option>`
-            + animals.map(a => `<option value="${a.id}">${a.name} (ID: ${a.id})</option>`).join('');
+    const parentSel = modal.querySelector('#animal-parent');
+    if (parentSel) {
+        parentSel.innerHTML =
+            `<option value="">None</option>` +
+            animals
+                .map(a => `<option value="${a.id}">${a.name} (ID: ${a.id})</option>`)
+                .join('');
     }
 
-    if (mgmt?.[3]) {
-        mgmt[3].innerHTML = `<option value="">Select Diet</option>`
+    const dietSel = modal.querySelector('#animal-diet');
+    if (dietSel) {
+        dietSel.innerHTML = `<option value="">Select Diet</option>`
             + diets.map(d => `<option value="${d.did}">${d.dietType}</option>`).join('');
     }
 
-    if (mgmt?.[4]) {
-        mgmt[4].innerHTML = `<option value="">Select Level</option>`
-            + [1, 2, 3, 4, 5].map(l => `<option value="${l}">${getDangerLabel(l)} (${l})</option>`).join('');
-    }
+
+    // if (mgmt?.[1]) {
+    //     mgmt[1].innerHTML = `<option value="">Select Cage</option>`
+    //         + cages.map(c => `<option value="${c.caid}">Cage ${c.caid}</option>`).join('');
+    // }
+
+    // if (mgmt?.[2]) {
+    //     mgmt[2].innerHTML = `<option value="">None</option>`
+    //         + animals.map(a => `<option value="${a.id}">${a.name} (ID: ${a.id})</option>`).join('');
+    // }
+
+    // if (mgmt?.[3]) {
+    //     mgmt[3].innerHTML = `<option value="">Select Diet</option>`
+    //         + diets.map(d => `<option value="${d.did}">${d.dietType}</option>`).join('');
+    // }
+
+    // if (mgmt?.[4]) {
+    //     mgmt[4].innerHTML = `<option value="">Select Level</option>`
+    //         + [1, 2, 3, 4, 5].map(l => `<option value="${l}">${getDangerLabel(l)} (${l})</option>`).join('');
+    // }
 }
 
 async function populateMedicalModalDropdowns(animals, staff) {
@@ -447,11 +475,11 @@ function populateEditAnimalModalDropdowns(currentAnimalId, animals, categories, 
             + categories.map(c => `<option value="${c.cid}">${c.name}</option>`).join('');
     }
 
-    const zoneSel = modal.querySelector('#edit-animal-zone');
-    if (zoneSel) {
-        zoneSel.innerHTML = `<option value="">Select Zone</option>`
-            + zones.map(z => `<option value="${z.zid}">${z.name}</option>`).join('');
-    }
+    // const zoneSel = modal.querySelector('#edit-animal-zone');
+    // if (zoneSel) {
+    //     zoneSel.innerHTML = `<option value="">Select Zone</option>`
+    //         + zones.map(z => `<option value="${z.zid}">${z.name}</option>`).join('');
+    // }
 
     const cageSel = modal.querySelector('#edit-animal-cage');
     if (cageSel) {
@@ -681,6 +709,7 @@ async function fetchAllDataCache() {
 // Save / Delete Animal
 
 async function saveAnimalToDB() {
+    
     const formData = {
         name:         document.getElementById('animal-name')?.value?.trim()     || '',
         sciName:      document.getElementById('animal-sci-name')?.value?.trim() || '',
@@ -698,6 +727,8 @@ async function saveAnimalToDB() {
         dangerLevel:  parseInt(document.getElementById('animal-danger')?.value)     || 1
     };
 
+    console.log(formData)
+
     const requiredFields = [
         { key: 'name',       label: 'Animal name' },
         { key: 'sciName',    label: 'Scientific name' },
@@ -705,7 +736,7 @@ async function saveAnimalToDB() {
         { key: 'class',      label: 'Class' },
         { key: 'birthDate',  label: 'Birth date' },
         { key: 'categoryId', label: 'Category' },
-        { key: 'zoneId',     label: 'Zone' },
+        // { key: 'zoneId',     label: 'Zone' },
         { key: 'cageId',     label: 'Cage' },
         { key: 'dietId',     label: 'Diet' },
     ];
@@ -770,6 +801,7 @@ async function updateAnimalInDB() {
     const sexRaw = (document.getElementById('edit-animal-sex')?.value || '').toLowerCase();
     const sex_map = { male: 'm', female: 'f' };
 
+
     const formData = {
         id:           parseInt(animalId),
         name:         document.getElementById('edit-animal-name')?.value          || '',
@@ -794,7 +826,7 @@ async function updateAnimalInDB() {
         { key: 'class',      label: 'Class' },
         { key: 'birthDate',  label: 'Birth date' },
         { key: 'categoryId', label: 'Category' },
-        { key: 'zoneId',     label: 'Zone' },
+        // { key: 'zoneId',     label: 'Zone' },
         { key: 'cageId',     label: 'Cage' },
         { key: 'dietId',     label: 'Diet' },
     ];
@@ -810,23 +842,11 @@ async function updateAnimalInDB() {
         document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
         document.body.style.overflow = '';
 
-        // const [animals, categories, zones, cages, diets] = await Promise.all([
-        //     getAdminAnimals(), getCategories(), getZones(), getCages(), getDiets()
-        // ]);
-
-        // const mediaResults = await Promise.allSettled(
-        //     animals.map(a => getAnimalMainMedia(a.id))
-        // );
-        // animals.forEach((a, i) => {
-        //     const res = mediaResults[i];
-        //     a.mainImage = res.status === 'fulfilled' && res.value?.url
-        //         ? res.value.url : '../images/unicorn.png';
-        // });
-
         _allDataCache = await fetchAllDataCache();
 
         // _allDataCache.animals = animals;
         _animalPager?.refresh(_allDataCache.animals);
+        initAdminAnimalsTable(_allDataCache)
         populateAnimalModalDropdowns(_allDataCache.animals, _allDataCache.categories, _allDataCache.zones, _allDataCache.cages, _allDataCache.diets);
         initCategoriesDiversity(_allDataCache)
         initDashboardStats(_allDataCache)
