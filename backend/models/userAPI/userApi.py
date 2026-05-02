@@ -99,7 +99,9 @@ def search_animals():
                 "sciName": row.SciName,
                 "category": row.CategoryName,
                 "zone": row.ZoneName,
-            })
+                "description": row.Description,
+                "image": (MEDIA_BASE_URL + row.MainImage) if row.MainImage else None
+})
 
         return jsonify(animals)
 

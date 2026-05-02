@@ -105,47 +105,21 @@ const MOCK_EVENTS = [
 
 // ─── API Functions ─────────────────────────────────────────────────────────────
 
-// API Endpoint: GET /api/animals?category=X
 async function getAnimals(category = null) {
-    if (USE_MOCK) {
-        if (!category || category === 'All') return [...MOCK_ANIMALS];
-        return MOCK_ANIMALS.filter(a => a.category === category);
-    }
     const query = category && category !== 'All' ? `?category=${encodeURIComponent(category)}` : '';
     return apiGet('/animals' + query);
 }
 
-// API Endpoint: GET /api/animals/{id}
 async function getAnimalById(id) {
-    if (USE_MOCK) {
-        return MOCK_ANIMALS.find(a => a.id === parseInt(id)) || null;
-    }
     return apiGet(`/animals/${id}`);
 }
 
-// API Endpoint: GET /api/animals/search?keyword=X
-async function searchAnimals(keyword) {
-    if (USE_MOCK) {
-        const kw = keyword.toLowerCase();
-        return MOCK_ANIMALS.filter(a =>
-            a.name.toLowerCase().includes(kw) ||
-            a.sciName.toLowerCase().includes(kw) ||
-            a.category.toLowerCase().includes(kw) ||
-            a.zone.toLowerCase().includes(kw)
-        );
-    }
-    return apiGet(`/animals/search?keyword=${encodeURIComponent(keyword)}`);
-}
-
-// API Endpoint: GET /api/events
 async function getEvents() {
-    if (USE_MOCK) return [...MOCK_EVENTS];
     return apiGet('/events');
 }
 
 // ─── Render Helpers ────────────────────────────────────────────────────────────
 
-// สำหรับหน้า Home (index.html) — path รูปไม่มี ../
 function renderHomeCard(animal) {
     const img = (animal.image || '').split('/').pop();
     return `
@@ -170,7 +144,6 @@ function renderHomeCard(animal) {
         </div>`;
 }
 
-// สำหรับหน้า Animals list (animals.html) — path รูปใช้ ../
 function renderAnimalCard(animal) {
     const img = (animal.image || '').split('/').pop();
     return `
@@ -223,14 +196,55 @@ function renderRelatedCard(animal) {
         </div>`;
 }
 
+function renderEventCard(event) {
+    const time = (event.showTime || '').substring(0, 5);
+    return `
+        <div class="event-card">
+            <img src="../images/unicorn.png" alt="${event.showName}" onerror="this.src='../images/unicorn.png'">
+            <div class="event-info">
+                <h2>${event.showName}</h2>
+                <p class="subtitle">${event.zone || ''} Zone</p>
+                <div class="event-meta">
+                    <div class="meta-item">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        <div><strong>${event.showDate}</strong></div>
+                    </div>
+                    <div class="meta-item">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <div><strong>${time}</strong></div>
+                    </div>
+                    <div class="meta-item">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <div><strong>${event.zone || ''}</strong><br><span>Zone</span></div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="window.location.href='map.html'">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg> View on Map
+            </button>
+        </div>`;
+}
+
 // ─── Page Initializers ─────────────────────────────────────────────────────────
 
-// เรียกใน index.html (homepage)
 async function initHomePage() {
     const grid = document.getElementById('home-animals-grid');
     if (!grid) return;
 
-    // แสดง skeleton ระหว่างโหลด
     grid.innerHTML = Array(8).fill(`
         <div class="animal-card skeleton">
             <div class="card-image-wrapper" style="background:#e8f0e9;min-height:180px;"></div>
@@ -243,7 +257,7 @@ async function initHomePage() {
     let allAnimals = await getAnimals();
 
     function renderGrid(animals) {
-        const display = animals.slice(0, 8); // โชว์แค่ 8 ตัวในหน้าหลัก
+        const display = animals.slice(0, 8);
         grid.innerHTML = display.length
             ? display.map(renderHomeCard).join('')
             : '<p style="padding:2rem;color:#888;grid-column:1/-1;">No animals found.</p>';
@@ -251,7 +265,6 @@ async function initHomePage() {
 
     renderGrid(allAnimals);
 
-    // Filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -265,13 +278,12 @@ async function initHomePage() {
     });
 }
 
-// เรียกใน animals.html
 async function initAnimalsPage() {
     const grid = document.getElementById('animals-grid');
     const countEl = document.getElementById('results-count');
     const searchInput = document.querySelector('.search-bar input');
 
-    async function renderList(animals) {
+    function renderList(animals) {
         grid.innerHTML = animals.length
             ? animals.map(renderAnimalCard).join('')
             : '<p style="padding:2rem;color:#888;">No animals found.</p>';
@@ -281,36 +293,43 @@ async function initAnimalsPage() {
     }
 
     let allAnimals = await getAnimals();
-    renderList(allAnimals);
+    let currentAnimals = allAnimals;
+
+    renderList(currentAnimals);
 
     document.querySelectorAll('.pill-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const label = btn.textContent.trim();
-            const filtered = label === 'All' ? allAnimals : allAnimals.filter(a => a.category === label);
-            renderList(filtered);
+            currentAnimals = label === 'All'
+                ? allAnimals
+                : allAnimals.filter(a => a.category === label);
+            renderList(currentAnimals);
+            if (searchInput) searchInput.value = '';
         });
     });
 
     if (searchInput) {
-        searchInput.addEventListener('input', async () => {
-            const kw = searchInput.value.trim();
-            const result = kw ? await searchAnimals(kw) : allAnimals;
+        searchInput.addEventListener('input', () => {
+            const kw = searchInput.value.trim().toLowerCase();
+            const result = kw
+                ? currentAnimals.filter(a => a.name.toLowerCase().startsWith(kw))
+                : currentAnimals;
             renderList(result);
         });
     }
 }
 
-// เรียกใน animal-detail.html
 async function initAnimalDetailPage() {
     const id = parseInt(new URLSearchParams(window.location.search).get('id')) || 1;
 
-    let animal, sameCategory;
+    let animal, sameCategory, allEvents;
     try {
-        [animal, sameCategory] = await Promise.all([
+        [animal, sameCategory, allEvents] = await Promise.all([
             getAnimalById(id),
-            getAnimals()
+            getAnimals(),
+            getEvents()
         ]);
     } catch (e) {
         console.error('[detail] โหลดข้อมูลล้มเหลว:', e);
@@ -348,6 +367,51 @@ async function initAnimalDetailPage() {
         img.alt = animal.name;
     });
 
+    // ── Show Schedule ──
+    const scheduleCard = document.querySelector('.schedule-card');
+    if (scheduleCard && allEvents && allEvents.length > 0) {
+        const event = allEvents[0];
+        const time = (event.showTime || '').substring(0, 5);
+        scheduleCard.innerHTML = `
+            <img src="../images/unicorn.png" alt="${event.showName}" onerror="this.src='../images/unicorn.png'">
+            <div class="schedule-info">
+                <h3>${event.showName}</h3>
+                <p class="subtitle">${event.zone || ''} Zone</p>
+                <div class="schedule-meta">
+                    <div class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        <div><strong>${event.showDate}</strong></div>
+                    </div>
+                    <div class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <div><strong>${time}</strong></div>
+                    </div>
+                    <div class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <div><strong>${event.zone || ''}</strong><br><span>Zone</span></div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-primary small-btn" onclick="window.location.href='map.html'">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg> View on Map
+            </button>`;
+    }
+
+    // ── Related Animals ──
     const relatedGrid = document.querySelector('.related-animals .animals-grid');
     if (relatedGrid) {
         const related = sameCategory
@@ -360,6 +424,20 @@ async function initAnimalDetailPage() {
     }
 }
 
+async function initEventsPage() {
+    const list = document.querySelector('.events-list');
+    const countEl = document.querySelector('.events-count-header span');
+    if (!list) return;
+
+    const events = await getEvents();
+
+    if (countEl) countEl.innerHTML = `<strong>${events.length}</strong> shows scheduled`;
+
+    list.innerHTML = events.length
+        ? events.map(renderEventCard).join('')
+        : '<p style="padding:2rem;color:#888;">No events found.</p>';
+}
+
 // ─── Auto-init ─────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -369,5 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initAnimalsPage();
     } else if (document.getElementById('detail-name')) {
         initAnimalDetailPage();
+    } else if (document.querySelector('.events-list')) {
+        initEventsPage();
     }
 });
